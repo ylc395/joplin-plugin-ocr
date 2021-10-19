@@ -1,5 +1,10 @@
 import { recognize } from 'tesseract.js';
-import type { GetResourceRequest, GetResourceResponse } from './type';
+import type {
+  GetResourceRequest,
+  GetResourceResponse,
+  GetInstallDirRequest,
+  GetInstallDirResponse,
+} from './type';
 const rootEl = document.getElementById('joplin-plugin-content');
 
 if (!rootEl) {
@@ -7,13 +12,18 @@ if (!rootEl) {
 }
 
 declare const webviewApi: {
-  postMessage: (payload: GetResourceRequest) => Promise<GetResourceResponse>;
+  postMessage: <T>(payload: GetResourceRequest | GetInstallDirRequest) => Promise<T>;
 };
 
-webviewApi.postMessage({ event: 'getResource' }).then(({ resource }) => {
-  const file = typeof resource === 'string' ? resource : new File([resource], 'myImage');
+webviewApi.postMessage<GetInstallDirResponse>({ event: 'getInstallDir' }).then((dir) => {
+  webviewApi.postMessage<GetResourceResponse>({ event: 'getResource' }).then(({ resource }) => {
+    const file = typeof resource === 'string' ? resource : new File([resource], 'myImage');
 
-  recognize(file, 'eng', { logger: console.log }).then(
-    ({ data: { text } }) => (rootEl.innerHTML = text),
-  );
+    recognize(file, 'eng', {
+      workerBlobURL: false,
+      logger: console.log,
+      workerPath: `${dir}/assets/lib/tesseract.js/worker.min.js`,
+      corePath: `${dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
+    }).then(({ data: { text } }) => (rootEl.innerHTML = text));
+  });
 });

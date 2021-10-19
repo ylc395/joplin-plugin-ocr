@@ -179,6 +179,15 @@ const pluginConfig = Object.assign({}, baseConfig, {
             ],
           },
         },
+        {
+          context: path.resolve(__dirname, 'node_modules'),
+          from: 'tesseract.js-core/tesseract-core.wasm(.js)?',
+          to: path.resolve(__dirname, 'dist/assets/lib'),
+        },
+        {
+          from: 'node_modules/tesseract.js/dist/worker.min.js',
+          to: path.resolve(__dirname, 'dist/assets/lib/tesseract.js/worker.min.js'),
+        },
       ],
     }),
   ],

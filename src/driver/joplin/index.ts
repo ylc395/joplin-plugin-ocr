@@ -2,18 +2,24 @@ import joplin from 'api';
 import { ContentScriptType, ViewHandle } from 'api/types';
 import { MARKDOWN_SCRIPT_ID } from '../constants';
 import type { MarkdownOcrRequest } from '../markdownView/type';
-import type { GetResourceRequest, GetResourceResponse } from '../dialogView/type';
+import type {
+  GetInstallDirRequest,
+  GetResourceRequest,
+  GetResourceResponse,
+} from '../dialogView/type';
 
 export class Joplin {
   private dialog?: ViewHandle;
   private resource?: Promise<ArrayBuffer | string>;
-  private async handleRequestFromDialog(payload: GetResourceRequest) {
+  private async handleRequestFromDialog(payload: GetResourceRequest | GetInstallDirRequest) {
     switch (payload.event) {
       case 'getResource':
         if (!this.resource) {
           throw new Error('no resource');
         }
         return { resource: await this.resource } as GetResourceResponse;
+      case 'getInstallDir':
+        return joplin.plugins.installationDir();
       default:
         break;
     }
