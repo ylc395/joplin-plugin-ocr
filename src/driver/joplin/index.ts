@@ -1,20 +1,59 @@
 import joplin from 'api';
-import { ContentScriptType } from 'api/types';
+import { ContentScriptType, ViewHandle } from 'api/types';
 import { MARKDOWN_SCRIPT_ID } from '../constants';
 import type { MarkdownOcrRequest } from '../markdownView/type';
+import type { GetResourceRequest, GetResourceResponse } from '../dialogView/type';
 
-export async function setupDialog() {
-  const dialog = await joplin.views.dialogs.create('main');
-  await joplin.views.dialogs.addScript(dialog, './driver/dialogWebview/index.js');
-}
+export class Joplin {
+  private dialog?: ViewHandle;
+  private resource?: Promise<ArrayBuffer | string>;
+  private async handleRequestFromDialog(payload: GetResourceRequest) {
+    switch (payload.event) {
+      case 'getResource':
+        if (!this.resource) {
+          throw new Error('no resource');
+        }
+        return { resource: await this.resource } as GetResourceResponse;
+      default:
+        break;
+    }
+  }
 
-export async function setupMarkdownView() {
-  await joplin.contentScripts.register(
-    ContentScriptType.MarkdownItPlugin,
-    MARKDOWN_SCRIPT_ID,
-    './driver/markdownView/index.js',
-  );
-  await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, (payload: MarkdownOcrRequest) => {
-    console.log(payload);
-  });
+  private handleRequestFromMdView({ event, payload }: MarkdownOcrRequest) {
+    switch (event) {
+      case 'markdownOcrRequest':
+        this.ocrResource(payload.url);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private ocrResource(url: string) {
+    if (!this.dialog) {
+      throw new Error('no dialog');
+    }
+
+    this.resource = joplin.data.get(['resources', url, 'file']).then(
+      ({ body }: { body: ArrayBuffer }) => body,
+      () => url,
+    );
+    joplin.views.dialogs.open(this.dialog);
+  }
+
+  async setupDialog() {
+    this.dialog = await joplin.views.dialogs.create('main');
+    await joplin.views.dialogs.setButtons(this.dialog, [{ id: 'cancel', title: 'Quit' }]);
+    await joplin.views.panels.onMessage(this.dialog, this.handleRequestFromDialog.bind(this));
+    joplin.views.dialogs.addScript(this.dialog, './driver/dialogView/index.js');
+  }
+
+  async setupMarkdownView() {
+    await joplin.contentScripts.register(
+      ContentScriptType.MarkdownItPlugin,
+      MARKDOWN_SCRIPT_ID,
+      './driver/markdownView/index.js',
+    );
+    joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.handleRequestFromMdView.bind(this));
+  }
 }

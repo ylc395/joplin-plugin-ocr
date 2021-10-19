@@ -214,12 +214,16 @@ function resolveExtraScriptPath(name) {
   s.pop();
   const nameNoExt = s.join('.');
 
+  const isWebview = !nameNoExt.endsWith('markdownView/index');
+  const target = isWebview ? 'web' : 'node';
+
   return {
+    target,
     entry: relativePath,
     output: {
       filename: `${nameNoExt}.js`,
       path: distDir,
-      ...(nameNoExt.endsWith('index')
+      ...(!isWebview
         ? {
             library: 'default',
             libraryTarget: 'commonjs',
@@ -239,6 +243,7 @@ function buildExtraScriptConfigs(userConfig) {
     const scriptPaths = resolveExtraScriptPath(scriptName);
     output.push(
       Object.assign({}, extraScriptConfig, {
+        target: scriptPaths.target,
         entry: scriptPaths.entry,
         output: scriptPaths.output,
       }),

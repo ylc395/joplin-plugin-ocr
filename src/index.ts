@@ -1,8 +1,11 @@
 import joplin from 'api';
-import { setupMarkdownView } from './driver/joplin';
+import { Joplin } from './driver/joplin';
+
+const joplinInstance = new Joplin();
 
 joplin.plugins.register({
   onStart: async function () {
-    await setupMarkdownView();
+    await joplinInstance.setupDialog();
+    await joplinInstance.setupMarkdownView();
   },
 });
