@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { Joplin } from './driver/joplin';
+import { Joplin } from './driver/joplin/joplinPlugin';
 
 const joplinInstance = new Joplin();
 
