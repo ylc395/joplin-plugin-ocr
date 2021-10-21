@@ -138,6 +138,7 @@ function onBuildCompleted() {
 }
 
 const baseConfig = {
+  devtool: 'inline-source-map',
   mode: process.env.NODE_ENV || 'production',
   target: 'node',
   stats: 'errors-only',

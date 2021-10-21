@@ -1,7 +1,7 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref } from 'vue';
 import range from 'lodash.range';
-import { RecognitionService } from './RecognitionService';
+import { RecognitionService } from './Base';
 
 export interface PdfRenderer {
   init(pdf: ArrayBuffer): void;

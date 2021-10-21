@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { videoRendererToken, VideoRenderer, Rect } from 'domain/service/VideoRecognitionService';
+import { videoRendererToken, VideoRenderer, Rect } from 'domain/service/RecognitionService';
 
 class HTMLVideoRenderer implements VideoRenderer {
   private videoEl?: HTMLVideoElement;

@@ -1,7 +1,7 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import { container } from 'tsyringe';
-import { PdfRenderer, pdfRendererToken } from 'domain/service/PdfRecognitionService';
+import { PdfRenderer, pdfRendererToken } from 'domain/service/RecognitionService';
 
 class HTMLPdfRenderer implements PdfRenderer {
   pdfDoc?: PDFDocumentProxy;

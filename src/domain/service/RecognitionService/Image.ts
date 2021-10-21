@@ -1,5 +1,5 @@
 import { Ref, ref } from 'vue';
-import { RecognitionService, Rect } from './RecognitionService';
+import { RecognitionService, Rect } from './Base';
 
 export class ImageRecognitionService extends RecognitionService {
   constructor(private readonly image: ArrayBuffer) {

@@ -1,9 +1,9 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref } from 'vue';
 import range from 'lodash.range';
-import { RecognitionService, Rect } from './RecognitionService';
+import { RecognitionService, Rect } from './Base';
 
-export { Rect } from './RecognitionService';
+export { Rect } from './Base';
 
 export interface VideoRenderer {
   init(video: ArrayBuffer): void;

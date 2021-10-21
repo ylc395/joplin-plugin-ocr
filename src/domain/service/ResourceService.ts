@@ -1,10 +1,12 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref, shallowRef, InjectionKey } from 'vue';
 import { Resource, isUrlResource, getResourceTypeFromMime, UrlResource } from '../model/Resource';
-import { RecognitionService } from './RecognitionService';
-import { ImageRecognitionService } from './ImageRecognitionService';
-import { PdfRecognitionService } from './PdfRecognitionService';
-import { VideoRecognitionService } from './VideoRecognitionService';
+import {
+  RecognitionService,
+  ImageRecognitionService,
+  PdfRecognitionService,
+  VideoRecognitionService,
+} from './RecognitionService';
 
 interface Joplin {
   getResources(): Promise<{ resources: Resource[] }>;
@@ -36,6 +38,11 @@ export class ResourceService {
   }
   async selectResource(index: number) {
     const resource = this.resources.value[index];
+
+    if (resource === this.selectedResource.value) {
+      return;
+    }
+
     this.selectedResource.value = resource;
 
     if (isUrlResource(resource) && !resource.body) {
