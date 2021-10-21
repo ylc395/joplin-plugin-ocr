@@ -1,5 +1,6 @@
 import joplin from 'api';
 import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
+import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
 import { MARKDOWN_SCRIPT_ID } from '../constants';
 import type { MarkdownOcrRequest } from '../markdownView/type';
 import {
@@ -11,11 +12,11 @@ import {
 
 export class Joplin {
   private dialog?: ViewHandle;
-  private resources?: Promise<GetResourcesResponse['resources']>;
+  private ocrRequest?: Promise<GetResourcesResponse>;
   private async handleRequestFromDialog(payload: GetResourcesRequest | GetInstallDirRequest) {
     switch (payload.event) {
       case 'getResources':
-        return { resource: await this.resources };
+        return this.ocrRequest;
       case 'getInstallDir':
         return joplin.plugins.installationDir();
       default:
@@ -26,40 +27,49 @@ export class Joplin {
   private handleRequestFromMdView({ event, payload }: MarkdownOcrRequest) {
     switch (event) {
       case 'markdownOcrRequest':
-        this.startOcr(payload.url, 'url');
+        this.startOcr(payload, 'url');
         break;
       default:
         break;
     }
   }
 
-  private startOcr(url: string, urlType: 'url' | 'noteId') {
+  private startOcr(
+    { resourceType, index, url }: MarkdownOcrRequest['payload'],
+    urlType: 'url' | 'noteId',
+  ) {
     if (!this.dialog) {
       throw new Error('no dialog');
     }
 
     if (urlType === 'url') {
-      this.resources = Joplin.getResource(url).then(Array.of);
+      this.ocrRequest = Joplin.getResource(url, resourceType).then((resource) => ({
+        resources: [resource],
+      }));
     }
 
     if (urlType === 'noteId') {
       //todo: handle html elements with url
-      this.resources = new Promise(async (resolve) => {
-        let ids: string[] = [];
+      this.ocrRequest = new Promise(async (resolve) => {
+        let allItems: Array<{ id: string; mime: string }> = [];
         let page = 1;
         let hasMore = true;
 
         while (hasMore) {
           const { items, has_more } = await joplin.data.get(['notes', url, 'resources'], {
-            fields: 'id',
+            fields: 'id,mime',
             page: page++,
           });
 
-          ids = ids.concat(items.id);
+          allItems = allItems.concat(items);
           hasMore = has_more;
         }
 
-        resolve(await Promise.all(ids.map((id) => Joplin.getResource(id))));
+        const resources = await Promise.all(
+          allItems.map(({ id, mime }) => Joplin.getResource(id, getResourceTypeFromMime(mime))),
+        );
+
+        resolve({ resources });
       });
     }
 
@@ -102,7 +112,7 @@ export class Joplin {
     });
   }
 
-  private static getResource(url: string) {
+  private static getResource(url: string, type: ResourceType) {
     return joplin.data.get(['resources', url, 'file']).then(
       ({
         body,
@@ -114,8 +124,13 @@ export class Joplin {
         attachmentFilename: string;
         contentType: string;
         id: string;
-      }) => ({ filename, body, mime, id }),
-      () => url,
+      }) => ({ file: { filename, body, mime, id }, type }),
+      () => {
+        if (!type) {
+          throw new Error('no type');
+        }
+        return { url, type };
+      },
     );
   }
 }

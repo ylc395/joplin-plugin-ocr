@@ -1,3 +1,4 @@
+import type { Resource } from 'domain/model/Resource';
 export interface GetResourcesRequest {
   event: 'getResources';
 }
@@ -12,7 +13,7 @@ export interface GetSettingOfRequest {
 }
 
 export interface GetResourcesResponse {
-  resources: Array<{ body: Uint8Array; mime: string; id: string; filename: string } | string>;
+  resources: Resource[];
 }
 
 export type GetInstallDirResponse = string;
