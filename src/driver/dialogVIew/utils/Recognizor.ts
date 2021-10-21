@@ -33,7 +33,8 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
     this.readyPromise = new Promise(async (resolve, reject) => {
       try {
         const dir = await getInstallDir();
-        const langs = await getSettingOf<string[]>(LANGS_SETTING_KEY);
+        const langs = (await getSettingOf<string>(LANGS_SETTING_KEY)).split(',');
+
         for (let i = 0; i < navigator.hardwareConcurrency; i++) {
           const worker = createWorker({
             workerBlobURL: false,

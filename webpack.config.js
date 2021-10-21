@@ -14,6 +14,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const WebpackOnBuildPlugin = require('on-build-webpack');
 const tar = require('tar');
 const glob = require('glob');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const execSync = require('child_process').execSync;
 
 const rootDir = path.resolve(__dirname);
@@ -22,6 +23,8 @@ const userConfigPath = path.resolve(rootDir, userConfigFilename);
 const distDir = path.resolve(rootDir, 'dist');
 const srcDir = path.resolve(rootDir, 'src');
 const publishDir = path.resolve(rootDir, 'publish');
+
+const webviewConfig = require('./webpack.webview.config');
 
 const userConfig = Object.assign(
   {},
@@ -135,7 +138,7 @@ function onBuildCompleted() {
 }
 
 const baseConfig = {
-  mode: 'production',
+  mode: process.env.NODE_ENV || 'production',
   target: 'node',
   stats: 'errors-only',
   module: {
@@ -152,6 +155,7 @@ const baseConfig = {
 const pluginConfig = Object.assign({}, baseConfig, {
   entry: './src/index.ts',
   resolve: {
+    plugins: [new TsconfigPathsPlugin()],
     alias: {
       api: path.resolve(__dirname, 'api'),
     },
@@ -176,6 +180,8 @@ const pluginConfig = Object.assign({}, baseConfig, {
               // already copied into /dist so we don't copy them.
               '**/*.ts',
               '**/*.tsx',
+              '**/*.vue',
+              '**/*.config.js',
             ],
           },
         },
@@ -193,8 +199,9 @@ const pluginConfig = Object.assign({}, baseConfig, {
   ],
 });
 
-const extraScriptConfig = Object.assign({}, baseConfig, {
+const extraScriptConfig = Object.assign({}, baseConfig, webviewConfig, {
   resolve: {
+    plugins: [new TsconfigPathsPlugin()],
     alias: {
       api: path.resolve(__dirname, 'api'),
     },
@@ -223,7 +230,10 @@ function resolveExtraScriptPath(name) {
   s.pop();
   const nameNoExt = s.join('.');
 
-  const isWebview = !nameNoExt.endsWith('markdownView/index');
+  const isWebview = ['markdownView/webview', 'dialogView/index'].some((page) =>
+    nameNoExt.endsWith(page),
+  );
+
   const target = isWebview ? 'web' : 'node';
 
   return {

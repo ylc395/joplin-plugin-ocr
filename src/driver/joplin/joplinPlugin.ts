@@ -1,24 +1,29 @@
 import joplin from 'api';
 import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
 import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
-import { MARKDOWN_SCRIPT_ID } from '../constants';
-import type { MarkdownOcrRequest } from '../markdownView/type';
+import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
+import type { MarkdownOcrRequest } from 'driver/markdownView/type';
 import {
   GetInstallDirRequest,
   GetResourcesRequest,
   GetResourcesResponse,
+  GetSettingOfRequest,
   LANGS_SETTING_KEY,
 } from './constants';
 
 export class Joplin {
   private dialog?: ViewHandle;
   private ocrRequest?: Promise<GetResourcesResponse>;
-  private async handleRequestFromDialog(payload: GetResourcesRequest | GetInstallDirRequest) {
-    switch (payload.event) {
+  private async handleRequestFromDialog(
+    request: GetResourcesRequest | GetInstallDirRequest | GetSettingOfRequest,
+  ) {
+    switch (request.event) {
       case 'getResources':
         return this.ocrRequest;
       case 'getInstallDir':
         return joplin.plugins.installationDir();
+      case 'getSettingOf':
+        return joplin.settings.value(request.payload);
       default:
         break;
     }
@@ -87,7 +92,7 @@ export class Joplin {
     await joplin.contentScripts.register(
       ContentScriptType.MarkdownItPlugin,
       MARKDOWN_SCRIPT_ID,
-      './driver/markdownView/index.js',
+      './driver/markdownView/joplinPlugin.js',
     );
     joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.handleRequestFromMdView.bind(this));
   }
@@ -96,18 +101,18 @@ export class Joplin {
     const SECTION_NAME = 'ocr';
 
     await joplin.settings.registerSection(SECTION_NAME, {
-      label: 'Pages Publisher',
+      label: 'OCR',
     });
 
     await joplin.settings.registerSettings({
       [LANGS_SETTING_KEY]: {
         label: 'Language Codes',
-        type: SettingItemType.Array,
+        type: SettingItemType.String,
         public: true,
-        value: [],
+        value: '',
         section: SECTION_NAME,
         description:
-          'Language Code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md',
+          'Available language code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md',
       },
     });
   }

@@ -1,5 +1,5 @@
 import { createPopper, Rect } from '@popperjs/core';
-import { MARKDOWN_SCRIPT_ID } from '../constants';
+import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import type { MarkdownOcrRequest } from './type';
 
 declare const webviewApi: {
@@ -62,7 +62,7 @@ class ImageManager {
           throw new Error('invalid ocr button');
         }
 
-        this.callOcr({ url: ocrUrl, index: Number(ocrIndex) });
+        this.callOcr({ url: ocrUrl, index: Number(ocrIndex), resourceType: 'image' });
       }
     });
     document.body.addEventListener(

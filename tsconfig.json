@@ -5,13 +5,16 @@
     "target": "es2015",
     "jsx": "react",
     "esModuleInterop": true,
-    "lib": ["DOM", "ESNext"],
+    "lib": ["DOM", "ESNext", "DOM.Iterable"],
     "paths": {
       "domain/*": ["src/domain/*"],
       "driver/*": ["src/driver/*"]
     },
     "allowJs": true,
     "baseUrl": ".",
-    "strict": true
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true
   }
 }

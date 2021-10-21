@@ -1,7 +1,7 @@
 {
   "extraScripts": [
-    "driver/markdownView/index.ts",
-    "driver/markdownView/attach.ts",
+    "driver/markdownView/joplinPlugin.ts",
+    "driver/markdownView/webview.ts",
     "driver/dialogView/index.ts"
   ]
 }

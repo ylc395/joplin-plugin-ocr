@@ -1,5 +1,5 @@
 import { container, InjectionToken } from 'tsyringe';
-import { Ref, ref, shallowRef } from 'vue';
+import { Ref, ref, shallowRef, InjectionKey } from 'vue';
 import { Resource, isUrlResource, getResourceTypeFromMime, UrlResource } from '../model/Resource';
 import { RecognitionService } from './RecognitionService';
 import { ImageRecognitionService } from './ImageRecognitionService';
@@ -17,6 +17,8 @@ interface Downloader {
 export const joplinToken: InjectionToken<Joplin> = Symbol();
 export const downloaderToken: InjectionToken<Downloader> = Symbol();
 
+export const token: InjectionKey<ResourceService> = Symbol();
+
 export class ResourceService {
   constructor() {
     this.init();
@@ -24,16 +26,16 @@ export class ResourceService {
   recognitionService: Ref<RecognitionService | null> = shallowRef(null);
   private readonly joplin = container.resolve(joplinToken);
   private readonly downloader = container.resolve(downloaderToken);
-  readonly list: Ref<Resource[]> = ref([]);
+  readonly resources: Ref<Resource[]> = ref([]);
   readonly selectedResource: Ref<Resource | null> = ref(null);
   private async init() {
     const { resources } = await this.joplin.getResources();
 
-    this.list.value = resources;
+    this.resources.value = resources;
     this.selectResource(0);
   }
   async selectResource(index: number) {
-    const resource = this.list.value[index];
+    const resource = this.resources.value[index];
     this.selectedResource.value = resource;
 
     if (isUrlResource(resource) && !resource.body) {

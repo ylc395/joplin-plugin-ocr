@@ -17,6 +17,6 @@ export const recognizorToken: InjectionToken<Recognizor> = Symbol();
 export abstract class RecognitionService {
   protected readonly recognizor = container.resolve(recognizorToken);
   abstract result: Ref<unknown | null>;
-  lang: string[] = [];
+  langs: string[] = ['eng'];
   abstract recognize(): Promise<void>;
 }

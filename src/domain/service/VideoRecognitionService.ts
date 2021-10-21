@@ -32,7 +32,7 @@ export class VideoRecognitionService extends RecognitionService {
 
     for (const frame of this.frames) {
       const frameImage = await this.videoRenderer.render(frame, this.rect);
-      result.push(await this.recognizor.recognize(this.lang, frameImage));
+      result.push(await this.recognizor.recognize(this.langs, frameImage));
     }
 
     this.result.value = result;
