@@ -7,16 +7,12 @@ import {
   PdfRecognitionService,
   VideoRecognitionService,
 } from './RecognitionService';
-
-interface Joplin {
-  getResources(): Promise<{ resources: Resource[] }>;
-}
+import { appToken } from './AppService';
 
 interface Downloader {
   download(url: string): Promise<{ body: ArrayBuffer; mime: string }>;
 }
 
-export const joplinToken: InjectionToken<Joplin> = Symbol();
 export const downloaderToken: InjectionToken<Downloader> = Symbol();
 
 export const token: InjectionKey<ResourceService> = Symbol();
@@ -26,7 +22,7 @@ export class ResourceService {
     this.init();
   }
   recognitionService: Ref<RecognitionService | null> = shallowRef(null);
-  private readonly joplin = container.resolve(joplinToken);
+  private readonly joplin = container.resolve(appToken);
   private readonly downloader = container.resolve(downloaderToken);
   readonly resources: Ref<Resource[]> = ref([]);
   readonly selectedResource: Ref<Resource | null> = ref(null);
@@ -57,6 +53,7 @@ export class ResourceService {
     } as const;
 
     if (resource.type !== 'unsupported') {
+      await this.recognitionService.value?.destroy();
       this.recognitionService.value = new constructors[resource.type](body);
     }
   }

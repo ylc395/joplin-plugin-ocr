@@ -28,13 +28,13 @@ export class VideoRecognitionService extends RecognitionService {
       .flat();
   }
   async recognize() {
-    const result: string[] = [];
+    const results: Promise<string>[] = [];
 
     for (const frame of this.frames) {
       const frameImage = await this.videoRenderer.render(frame, this.rect);
-      result.push(await this.recognizor.recognize(this.langs, frameImage));
+      results.push(this.recognizor.recognize(this.langs, frameImage));
     }
 
-    this.result.value = result;
+    this.result.value = await Promise.all(results);
   }
 }

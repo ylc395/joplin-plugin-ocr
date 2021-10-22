@@ -23,13 +23,13 @@ export class PdfRecognitionService extends RecognitionService {
 
   result: Ref<null | string[]> = ref(null);
   async recognize() {
-    const result: string[] = [];
+    const results: Promise<string>[] = [];
 
     for (const pageNumber of this.pageNumbers) {
       const pageImage = await this.pdfRenderer.render(pageNumber);
-      result.push(await this.recognizor.recognize(this.langs, pageImage));
+      results.push(this.recognizor.recognize(this.langs, pageImage));
     }
 
-    this.result.value = result;
+    this.result.value = await Promise.all(results);
   }
 }

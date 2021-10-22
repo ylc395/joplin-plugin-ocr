@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { joplinToken } from 'domain/service/ResourceService';
+import { appToken } from 'domain/service/AppService';
 import type {
   GetResourcesRequest,
   GetResourcesResponse,
@@ -26,4 +26,4 @@ export const getSettingOf = <T>(key: string) => {
   return webviewApi.postMessage<T>({ event: 'getSettingOf', payload: key });
 };
 
-container.registerInstance(joplinToken, { getResources });
+container.registerInstance(appToken, { getResources, getSettingOf });

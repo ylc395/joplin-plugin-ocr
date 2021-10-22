@@ -2,65 +2,71 @@ import { container } from 'tsyringe';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
 import EventEmitter from 'eventemitter3';
 import { recognizorToken, Recognizor, Rect } from 'domain/service/RecognitionService';
-import { getInstallDir, getSettingOf } from 'driver/joplin/webview';
-import { LANGS_SETTING_KEY } from 'driver/joplin/constants';
+import { getInstallDir } from 'driver/joplin/webview';
 
 class TesseractRecognizor extends EventEmitter implements Recognizor {
   private readonly scheduler = createScheduler();
-  private readonly workers: Worker[] = [];
+  private workers: Worker[] = [];
+  private dir?: string;
+  private readonly maxWorkerCount = navigator.hardwareConcurrency;
+  private allLangs?: string[];
   private lastLangs?: string[];
-  private readyPromise: Promise<void> = Promise.reject();
   constructor() {
     super();
-    this.init();
   }
 
-  private async initLangs(langs: string[]) {
-    if (
-      langs.length === this.lastLangs?.length &&
-      langs.every((lang) => this.lastLangs?.includes(lang))
-    ) {
-      return;
+  private async initNewWorker(langs?: string[]) {
+    if (!this.dir || !this.allLangs) {
+      throw new Error('not init yet');
     }
 
-    this.lastLangs = langs;
-    for (const worker of this.workers) {
+    const worker = createWorker({
+      workerBlobURL: false,
+      logger: console.log,
+      workerPath: `${this.dir}/assets/lib/tesseract.js/worker.min.js`,
+      corePath: `${this.dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
+    });
+
+    await worker.load();
+    await worker.loadLanguage(this.allLangs.join('+'));
+
+    if (langs) {
       await worker.initialize(langs.join('+'));
     }
+
+    this.scheduler.addWorker(worker);
+    this.workers.push(worker);
   }
 
-  private async init() {
-    this.readyPromise = new Promise(async (resolve, reject) => {
-      try {
-        const dir = await getInstallDir();
-        const langs = (await getSettingOf<string>(LANGS_SETTING_KEY)).split(',');
+  async init(allLangs: string[]) {
+    this.dir = await getInstallDir();
+    this.allLangs = allLangs;
 
-        for (let i = 0; i < navigator.hardwareConcurrency; i++) {
-          const worker = createWorker({
-            workerBlobURL: false,
-            logger: console.log,
-            workerPath: `${dir}/assets/lib/tesseract.js/worker.min.js`,
-            corePath: `${dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
-          });
-          await worker.load();
-          await worker.loadLanguage(langs.join('+'));
-          this.scheduler.addWorker(worker);
-          this.workers.push(worker);
-        }
-      } catch (error) {
-        reject(error);
-      }
-      resolve();
-    });
+    return this.initNewWorker();
+  }
+
+  destroy() {
+    const workers = this.workers;
+    this.workers = [];
+
+    return Promise.all(workers.map((worker) => worker.terminate())).then(() => undefined);
+  }
+
+  private isNewLang(langs: string[]) {
+    return (
+      this.lastLangs?.length !== langs.length ||
+      langs.some((lang) => !this.lastLangs?.includes(lang))
+    );
   }
 
   async recognize(langs: string[], image: ArrayBuffer, rect?: Rect) {
-    await this.readyPromise;
-    await this.initLangs(langs);
+    if (this.isNewLang(langs)) {
+      await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
+    }
 
-    const {
-      data: { text },
-    } = (await this.scheduler.addJob('recognize', new File([image], 'image'), {
+    this.lastLangs = langs;
+
+    const result = this.scheduler.addJob('recognize', new File([image], 'image'), {
       rectangle: rect
         ? {
             top: rect.y,
@@ -69,7 +75,17 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
             height: rect.height,
           }
         : undefined,
-    })) as RecognizeResult;
+    }) as Promise<RecognizeResult>;
+    const workerCount = this.scheduler.getNumWorkers();
+    const jobCount = this.scheduler.getQueueLen();
+
+    if (jobCount >= workerCount && workerCount < this.maxWorkerCount) {
+      this.initNewWorker(langs);
+    }
+
+    const {
+      data: { text },
+    } = await result;
 
     return text;
   }
