@@ -6,3 +6,5 @@ export interface App {
 }
 
 export const appToken: InjectionToken<App> = Symbol();
+
+export const LANGS_SETTING_KEY = 'langs';

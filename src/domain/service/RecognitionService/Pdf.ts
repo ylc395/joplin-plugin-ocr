@@ -27,7 +27,7 @@ export class PdfRecognitionService extends RecognitionService {
 
     for (const pageNumber of this.pageNumbers) {
       const pageImage = await this.pdfRenderer.render(pageNumber);
-      results.push(this.recognizor.recognize(this.langs, pageImage));
+      results.push(this.recognizor.recognize(this.langs.value, pageImage));
     }
 
     this.result.value = await Promise.all(results);

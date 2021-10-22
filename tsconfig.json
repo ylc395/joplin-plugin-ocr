@@ -15,7 +15,6 @@
     "strict": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true
+    "sourceMap": true
   }
 }

@@ -8,6 +8,6 @@ export class ImageRecognitionService extends RecognitionService {
   rect?: Rect;
   result: Ref<null | string> = ref(null);
   async recognize() {
-    this.result.value = await this.recognizor.recognize(this.langs, this.image, this.rect);
+    this.result.value = await this.recognizor.recognize(this.langs.value, this.image, this.rect);
   }
 }

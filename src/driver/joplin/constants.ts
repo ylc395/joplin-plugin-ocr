@@ -17,5 +17,3 @@ export interface GetResourcesResponse {
 }
 
 export type GetInstallDirResponse = string;
-
-export const LANGS_SETTING_KEY = 'langs';

@@ -39,6 +39,11 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
   }
 
   async init(allLangs: string[]) {
+    // do not init twice
+    if (this.dir) {
+      return;
+    }
+
     this.dir = await getInstallDir();
     this.allLangs = allLangs;
 

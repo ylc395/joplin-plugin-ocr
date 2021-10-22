@@ -37,12 +37,15 @@ export class ResourceService {
   }
   async selectResource(index: number) {
     const resource = this.resources.value[index];
+    const oldRecognitionService = this.recognitionService.value;
 
     if (resource === this.selectedResource.value) {
       return;
     }
 
     this.selectedResource.value = resource;
+    this.recognitionService.value = null;
+    oldRecognitionService?.destroy();
 
     if (isUrlResource(resource) && !resource.body) {
       await this.downloadUrlResource(resource);
@@ -56,7 +59,6 @@ export class ResourceService {
     } as const;
 
     if (resource.type !== 'unsupported') {
-      await this.recognitionService.value?.destroy();
       this.recognitionService.value = new constructors[resource.type](body);
     }
   }

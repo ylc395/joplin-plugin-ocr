@@ -1,6 +1,7 @@
 import joplin from 'api';
 import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
 import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
+import { LANGS_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import type { MarkdownOcrRequest } from 'driver/markdownView/type';
 import {
@@ -8,7 +9,6 @@ import {
   GetResourcesRequest,
   GetResourcesResponse,
   GetSettingOfRequest,
-  LANGS_SETTING_KEY,
 } from './constants';
 
 export class Joplin {
