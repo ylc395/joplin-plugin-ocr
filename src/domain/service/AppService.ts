@@ -1,7 +1,7 @@
 import type { InjectionToken } from 'tsyringe';
 import { Resource } from '../model/Resource';
 export interface App {
-  getResources(): Promise<{ resources: Resource[] }>;
+  getResources(): Promise<{ resources: Resource[] | Resource }>;
   getSettingOf<T>(key: string): Promise<T>;
 }
 

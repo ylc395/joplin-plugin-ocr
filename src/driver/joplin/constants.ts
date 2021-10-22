@@ -13,7 +13,7 @@ export interface GetSettingOfRequest {
 }
 
 export interface GetResourcesResponse {
-  resources: Resource[];
+  resources: Resource[] | Resource;
 }
 
 export type GetInstallDirResponse = string;

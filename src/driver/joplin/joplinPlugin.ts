@@ -49,7 +49,7 @@ export class Joplin {
 
     if (urlType === 'url') {
       this.ocrRequest = Joplin.getResource(url, resourceType).then((resource) => ({
-        resources: [resource],
+        resources: resource,
       }));
     }
 
@@ -130,12 +130,7 @@ export class Joplin {
         contentType: string;
         id: string;
       }) => ({ file: { filename, body, mime, id }, type }),
-      () => {
-        if (!type) {
-          throw new Error('no type');
-        }
-        return { url, type };
-      },
+      () => ({ url, type }),
     );
   }
 }

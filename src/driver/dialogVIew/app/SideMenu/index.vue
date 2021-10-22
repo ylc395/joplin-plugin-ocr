@@ -5,14 +5,14 @@ import { isUrlResource } from 'domain/model/Resource';
 
 export default defineComponent({
   setup() {
-    const { resources, selectResource } = inject(resourceToken)!;
+    const { resources, selectResource, isMultipleResource } = inject(resourceToken)!;
 
-    return { resources, isUrlResource, selectResource };
+    return { resources, isUrlResource, selectResource, isMultipleResource };
   },
 });
 </script>
 <template>
-  <ol>
+  <ol v-if="isMultipleResource">
     <li
       v-for="(resource, index) of resources"
       :key="isUrlResource(resource) ? resource.url : resource.file.id"

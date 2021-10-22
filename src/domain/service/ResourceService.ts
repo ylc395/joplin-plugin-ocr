@@ -25,11 +25,14 @@ export class ResourceService {
   private readonly joplin = container.resolve(appToken);
   private readonly downloader = container.resolve(downloaderToken);
   readonly resources: Ref<Resource[]> = ref([]);
+  readonly isMultipleResource = ref(false);
   readonly selectedResource: Ref<Resource | null> = ref(null);
   private async init() {
     const { resources } = await this.joplin.getResources();
 
-    this.resources.value = resources;
+    this.resources.value = Array.isArray(resources) ? resources : [resources];
+    this.isMultipleResource.value = Array.isArray(resources);
+
     this.selectResource(0);
   }
   async selectResource(index: number) {
