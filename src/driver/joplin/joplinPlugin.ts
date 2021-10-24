@@ -2,7 +2,7 @@ import joplin from 'api';
 import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
 import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
 import { LANGS_SETTING_KEY } from 'domain/service/AppService';
-import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
+import { MARKDOWN_SCRIPT_ID, WINDOW_HEIGHT, WINDOW_WIDTH } from 'driver/constants';
 import type { MarkdownOcrRequest } from 'driver/markdownView/type';
 import {
   GetInstallDirRequest,
@@ -39,7 +39,7 @@ export class Joplin {
     }
   }
 
-  private startOcr(
+  private async startOcr(
     { resourceType, index, url }: MarkdownOcrRequest['payload'],
     urlType: 'url' | 'noteId',
   ) {
@@ -78,6 +78,10 @@ export class Joplin {
       });
     }
 
+    await joplin.views.dialogs.setHtml(
+      this.dialog,
+      `<style>#joplin-plugin-content {width: ${WINDOW_WIDTH}px; height: ${WINDOW_HEIGHT}px}</style>`,
+    );
     joplin.views.dialogs.open(this.dialog);
   }
 

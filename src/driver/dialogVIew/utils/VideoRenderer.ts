@@ -30,8 +30,8 @@ class HTMLVideoRenderer implements VideoRenderer {
     if (rect) {
       context.drawImage(
         this.videoEl,
-        rect.x,
-        rect.y,
+        rect.left,
+        rect.top,
         rect.width,
         rect.height,
         0,

@@ -13,3 +13,7 @@ export function selfish<T>(target: T) {
     },
   }) as T;
 }
+
+export function getRootEl() {
+  return document.getElementById('joplin-plugin-content')!;
+}

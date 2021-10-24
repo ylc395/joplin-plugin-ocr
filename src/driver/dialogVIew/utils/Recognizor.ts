@@ -1,13 +1,19 @@
 import { container } from 'tsyringe';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
 import EventEmitter from 'eventemitter3';
-import { recognizorToken, Recognizor, Rect } from 'domain/service/RecognitionService';
+import {
+  recognizorToken,
+  Recognizor,
+  Rect,
+  RecognizorEvents,
+} from 'domain/service/RecognitionService';
 import { getInstallDir } from 'driver/joplin/webview';
 
-class TesseractRecognizor extends EventEmitter implements Recognizor {
+class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Recognizor {
   private readonly scheduler = createScheduler();
   private workers: Worker[] = [];
   private dir?: string;
+  private initPromise?: Promise<void>;
   private readonly maxWorkerCount = navigator.hardwareConcurrency;
   private allLangs?: string[];
   private lastLangs?: string[];
@@ -22,7 +28,15 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
 
     const worker = createWorker({
       workerBlobURL: false,
-      logger: console.log,
+      logger: (log) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(log);
+        }
+
+        if (log?.status === 'recognizing text') {
+          this.emit(RecognizorEvents.Progress, log.progress);
+        }
+      },
       workerPath: `${this.dir}/assets/lib/tesseract.js/worker.min.js`,
       corePath: `${this.dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
     });
@@ -39,20 +53,22 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
   }
 
   async init(allLangs: string[]) {
-    // do not init twice
-    if (this.dir) {
-      return;
-    }
+    this.initPromise = new Promise(async (resolve) => {
+      if (!this.dir) {
+        this.dir = await getInstallDir();
+      }
 
-    this.dir = await getInstallDir();
-    this.allLangs = allLangs;
+      this.allLangs = allLangs;
 
-    return this.initNewWorker();
+      await this.initNewWorker();
+      resolve();
+    });
   }
 
   destroy() {
     const workers = this.workers;
     this.workers = [];
+    this.removeAllListeners();
 
     return Promise.all(workers.map((worker) => worker.terminate())).then(() => undefined);
   }
@@ -65,6 +81,8 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
   }
 
   async recognize(langs: string[], image: ArrayBuffer, rect?: Rect) {
+    await this.initPromise;
+
     if (this.isNewLang(langs)) {
       await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
     }
@@ -72,14 +90,7 @@ class TesseractRecognizor extends EventEmitter implements Recognizor {
     this.lastLangs = langs;
 
     const result = this.scheduler.addJob('recognize', new File([image], 'image'), {
-      rectangle: rect
-        ? {
-            top: rect.y,
-            left: rect.x,
-            width: rect.width,
-            height: rect.height,
-          }
-        : undefined,
+      rectangle: rect || undefined,
     }) as Promise<RecognizeResult>;
     const workerCount = this.scheduler.getNumWorkers();
     const jobCount = this.scheduler.getQueueLen();

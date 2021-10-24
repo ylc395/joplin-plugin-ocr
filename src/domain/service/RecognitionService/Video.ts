@@ -18,7 +18,6 @@ export class VideoRecognitionService extends RecognitionService {
     this.videoRenderer.init(video);
   }
   private readonly videoRenderer = container.resolve(videoRendererToken);
-  rect?: Rect;
   range: Array<number | [number, number]> = [];
   sampleInterval: number = 1000;
   result: Ref<null | string[]> = ref(null);
@@ -31,7 +30,7 @@ export class VideoRecognitionService extends RecognitionService {
     const results: Promise<string>[] = [];
 
     for (const frame of this.frames) {
-      const frameImage = await this.videoRenderer.render(frame, this.rect);
+      const frameImage = await this.videoRenderer.render(frame, this.rect.value);
       results.push(this.recognizor.recognize(this.langs.value, frameImage));
     }
 
