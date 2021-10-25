@@ -1,5 +1,7 @@
-import { createPopper, Rect } from '@popperjs/core';
+import { ScanOutlined } from '@ant-design/icons-svg';
+import { renderIconDefinitionToSVGElement } from '@ant-design/icons-svg/es/helpers';
 import { ResourceType } from 'domain/model/Resource';
+import { attachPopper } from './popper';
 
 export const BTN_CLASS_NAME = 'ocr-button';
 
@@ -12,25 +14,16 @@ function createButton(
   button.dataset.ocrUrl = url;
   button.dataset.ocrIndex = String(index);
   button.classList.add(BTN_CLASS_NAME);
+  button.title = 'OCR';
+  button.innerHTML = renderIconDefinitionToSVGElement(ScanOutlined, {
+    extraSVGAttrs: { width: '1em', height: '1em', fill: 'currentColor' },
+  });
 
   if (btnContainerEl) {
     btnContainerEl.appendChild(button);
   }
 
   return button;
-}
-
-function attachPopper(containerEl: HTMLElement, targetEl: HTMLElement) {
-  createPopper(containerEl, targetEl, {
-    placement: 'right-start',
-    modifiers: [
-      {
-        name: 'offset',
-        options: { offset: ({ popper }: { popper: Rect }) => [0, -popper.width] },
-      },
-      { name: 'flip', enabled: false },
-    ],
-  });
 }
 
 export function attachToImage(imgEl: HTMLImageElement, btnContainerEl: HTMLElement) {
@@ -46,7 +39,7 @@ export function attachToImage(imgEl: HTMLImageElement, btnContainerEl: HTMLEleme
   const index = [...imgsWithSameResource].indexOf(imgEl);
   const button = createButton({ url, type: 'image', index }, btnContainerEl);
 
-  attachPopper(btnContainerEl, button);
+  attachPopper(imgEl, button);
 }
 
 export function attachToPdf() {
@@ -89,5 +82,5 @@ export function attachToVideo(videoEl: HTMLVideoElement, btnContainerEl: HTMLEle
 
   // todo: find out the right index
   const button = createButton({ url: src, type: 'video', index: 0 }, btnContainerEl);
-  attachPopper(btnContainerEl, button);
+  attachPopper(videoEl, button);
 }

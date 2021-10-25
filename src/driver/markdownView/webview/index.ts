@@ -45,9 +45,15 @@ class Attacher {
     );
 
     document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+      let target = e.target as HTMLElement;
 
-      if (target.classList?.contains(BTN_CLASS_NAME)) {
+      if (target.matches(`.${BTN_CLASS_NAME} *`)) {
+        while (!target.classList.contains(BTN_CLASS_NAME)) {
+          target = target.parentElement!;
+        }
+      }
+
+      if (target.classList.contains(BTN_CLASS_NAME)) {
         const { ocrUrl, ocrIndex, ocrType } = target.dataset;
 
         if (!ocrUrl || !ocrIndex || !isResourceType(ocrType)) {

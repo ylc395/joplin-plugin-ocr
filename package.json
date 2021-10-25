@@ -39,6 +39,7 @@
     "yargs": "^16.2.0"
   },
   "dependencies": {
+    "@ant-design/icons-svg": "^4.2.1",
     "@ant-design/icons-vue": "^6.0.1",
     "@popperjs/core": "^2.10.2",
     "ant-design-vue": "^2.2.8",
