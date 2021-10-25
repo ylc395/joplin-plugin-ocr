@@ -21,6 +21,10 @@ export type Resource = UrlResource | FileResource;
 
 export const isUrlResource = (resource: Resource): resource is UrlResource => 'url' in resource;
 
+export const isResourceType = (str: any): str is ResourceType => {
+  return ['image', 'pdf', 'video'].includes(str);
+};
+
 export const getResourceTypeFromMime = (mime: string): ResourceType => {
   if (mime.includes('image')) {
     return 'image';

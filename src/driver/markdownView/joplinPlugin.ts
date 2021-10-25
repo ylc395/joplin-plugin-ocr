@@ -3,7 +3,7 @@ module.exports = {
     return {
       plugin: () => {},
       assets: function () {
-        return [{ name: 'webview.js' }, { name: 'style.css' }];
+        return [{ name: 'webview/index.js' }, { name: 'webview/style.css' }];
       },
     };
   },
