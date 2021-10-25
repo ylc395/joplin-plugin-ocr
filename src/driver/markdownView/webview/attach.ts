@@ -4,6 +4,9 @@ import { ResourceType } from 'domain/model/Resource';
 import { attachPopper } from './popper';
 
 export const BTN_CLASS_NAME = 'ocr-button';
+const ICON = renderIconDefinitionToSVGElement(ScanOutlined, {
+  extraSVGAttrs: { width: '1em', height: '1em', fill: 'currentColor' },
+});
 
 function createButton(
   { url, type, index }: { url: string; type: ResourceType; index: number },
@@ -15,9 +18,7 @@ function createButton(
   button.dataset.ocrIndex = String(index);
   button.classList.add(BTN_CLASS_NAME);
   button.title = 'OCR';
-  button.innerHTML = renderIconDefinitionToSVGElement(ScanOutlined, {
-    extraSVGAttrs: { width: '1em', height: '1em', fill: 'currentColor' },
-  });
+  button.innerHTML = ICON;
 
   if (btnContainerEl) {
     btnContainerEl.appendChild(button);

@@ -32,7 +32,7 @@ export class Joplin {
   private handleRequestFromMdView({ event, payload }: MarkdownOcrRequest) {
     switch (event) {
       case 'markdownOcrRequest':
-        this.startOcr(payload, 'url');
+        this.startOcr(payload, 'resource');
         break;
       default:
         break;
@@ -41,19 +41,19 @@ export class Joplin {
 
   private async startOcr(
     { resourceType, index, url }: MarkdownOcrRequest['payload'],
-    urlType: 'url' | 'noteId',
+    urlType: 'resource' | 'note',
   ) {
     if (!this.dialog) {
       throw new Error('no dialog');
     }
 
-    if (urlType === 'url') {
+    if (urlType === 'resource') {
       this.ocrRequest = Joplin.getResource(url, resourceType).then((resource) => ({
         resources: resource,
       }));
     }
 
-    if (urlType === 'noteId') {
+    if (urlType === 'note') {
       //todo: handle html elements with url
       this.ocrRequest = new Promise(async (resolve) => {
         let allItems: Array<{ id: string; mime: string }> = [];
