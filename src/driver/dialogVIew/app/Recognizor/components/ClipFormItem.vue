@@ -3,6 +3,7 @@ import { defineComponent, inject } from 'vue';
 import { Input, FormItem, Button, Modal } from 'ant-design-vue';
 import { ScissorOutlined } from '@ant-design/icons-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
+import { isWithRect } from 'domain/service/RecognitionService';
 import { getRootEl } from 'driver/dialogView/utils/helper';
 import { useBlobUrl, useCropper } from '../composable';
 
@@ -21,15 +22,18 @@ export default defineComponent({
       imgRef,
       startClip,
       endClip,
+      isWithRect,
       handleConfirm() {
-        recognitionService.value!.rect.value = endClip();
+        if (isWithRect(recognitionService.value)) {
+          recognitionService.value.rect.value = endClip();
+        }
       },
     };
   },
 });
 </script>
 <template>
-  <FormItem label="Area" v-if="recognitionService">
+  <FormItem label="Area" v-if="isWithRect(recognitionService)">
     <div class="flex flex-nowrap mb-2">
       <Input
         readOnly

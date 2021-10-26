@@ -13,10 +13,11 @@ export interface VideoRenderer {
 export const videoRendererToken: InjectionToken<VideoRenderer> = Symbol();
 
 export class VideoRecognitionService extends RecognitionService {
-  constructor(private readonly video: ArrayBuffer) {
+  constructor(video: ArrayBuffer) {
     super();
     this.videoRenderer.init(video);
   }
+  readonly rect: Ref<Rect | undefined> = ref(undefined);
   private readonly videoRenderer = container.resolve(videoRendererToken);
   range: Array<number | [number, number]> = [];
   sampleInterval: number = 1000;

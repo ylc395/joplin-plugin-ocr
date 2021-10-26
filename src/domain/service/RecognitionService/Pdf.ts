@@ -11,7 +11,7 @@ export interface PdfRenderer {
 export const pdfRendererToken: InjectionToken<PdfRenderer> = Symbol();
 
 export class PdfRecognitionService extends RecognitionService {
-  constructor(private readonly pdf: ArrayBuffer) {
+  constructor(pdf: ArrayBuffer) {
     super();
     this.pdfRenderer.init(pdf);
   }

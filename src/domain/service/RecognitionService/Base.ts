@@ -34,7 +34,6 @@ export abstract class RecognitionService {
   readonly isRecognizing = ref(false);
   readonly langs: Ref<string[]> = ref([]);
   readonly allLangs: Ref<string[]> = ref([]);
-  readonly rect: Ref<Rect | undefined> = ref(undefined);
   destroy() {
     return this.recognizor.destroy();
   }

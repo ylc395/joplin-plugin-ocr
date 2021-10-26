@@ -7,6 +7,7 @@ export class ImageRecognitionService extends RecognitionService {
   }
 
   result: Ref<string> = ref('');
+  readonly rect: Ref<Rect | undefined> = ref(undefined);
 
   async recognize() {
     this.isRecognizing.value = true;
