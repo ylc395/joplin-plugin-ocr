@@ -1,7 +1,7 @@
 import Cropper from 'cropperjs';
 import mapValues from 'lodash.mapvalues';
 import 'cropperjs/dist/cropper.css';
-import { computed, Ref, ref, nextTick, inject } from 'vue';
+import { computed, Ref, ref, nextTick, inject, provide } from 'vue';
 import { Resource, isUrlResource } from 'domain/model/Resource';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { PdfRecognitionService, VideoRecognitionService } from 'domain/service/RecognitionService';
@@ -63,6 +63,10 @@ export function useRange() {
       return (range.length === 1 ? v : range) as string | [string, string];
     });
   const validateValue = (value: string) => {
+    if (!value) {
+      return true;
+    }
+
     let values: string[];
 
     try {
@@ -130,4 +134,22 @@ export function useRange() {
     updateRange,
     validateStatus,
   };
+}
+
+const videoRef: Ref<null | HTMLVideoElement> = ref(null);
+export function useFrameCapture() {
+  const capture = () => {
+    if (!videoRef.value) {
+      throw new Error('no video el');
+    }
+
+    const { currentTime } = videoRef.value;
+    const hour = Math.floor(currentTime / 3600);
+    const minute = Math.floor((currentTime % 3600) / 60);
+    const second = Math.floor((currentTime % 3600) % 60);
+
+    return `${hour}:${minute}:${second}`;
+  };
+
+  return { videoRef, capture };
 }

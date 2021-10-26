@@ -1,18 +1,24 @@
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
 import { Input, FormItem } from 'ant-design-vue';
+import { CameraOutlined } from '@ant-design/icons-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
-import { useRange } from '../composable';
+import { useRange, useFrameCapture } from '../composable';
 
 export default defineComponent({
-  components: { FormItem, Input },
+  components: { FormItem, Input, CameraOutlined },
   setup() {
     const { selectedResource } = inject(resourceToken)!;
     const { range, updateRange, validateStatus } = useRange();
+    const { capture } = useFrameCapture();
 
     return {
       range,
       validateStatus,
+      capture: () => {
+        const time = capture();
+        updateRange(range.value ? `${range.value},${time}` : time);
+      },
       handleChange: (e: InputEvent) => updateRange((e.target as HTMLInputElement).value || ''),
       label: computed(() => {
         switch (selectedResource.value?.type) {
@@ -40,6 +46,14 @@ export default defineComponent({
 </script>
 <template>
   <FormItem name="frames" :validateStatus="validateStatus" :label="label" :help="help">
-    <Input :value="range" @change="handleChange" />
+    <Input
+      :value="range"
+      @change="handleChange"
+      placeholder="Left empty to recognize all frames of video"
+    >
+      <template #addonAfter>
+        <CameraOutlined @click="capture" />
+      </template>
+    </Input>
   </FormItem>
 </template>
