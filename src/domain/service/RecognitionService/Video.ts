@@ -28,6 +28,7 @@ export class VideoRecognitionService extends RecognitionService {
   }
   async recognize() {
     const results: Promise<string>[] = [];
+    this.isRecognizing.value = true;
 
     for (const frame of this.frames) {
       const frameImage = await this.videoRenderer.render(frame, this.rect.value);
@@ -35,5 +36,6 @@ export class VideoRecognitionService extends RecognitionService {
     }
 
     this.result.value = await Promise.all(results);
+    this.isRecognizing.value = true;
   }
 }

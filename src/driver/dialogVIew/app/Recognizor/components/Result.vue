@@ -1,15 +1,21 @@
 <script lang="ts">
-import { defineComponent, inject, watch, ref, computed } from 'vue';
+import { defineComponent, inject, watch, ref } from 'vue';
 import { Progress, Textarea } from 'ant-design-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
-import { RecognizorEvents, ImageRecognitionService } from 'domain/service/RecognitionService';
+import {
+  RecognizorEvents,
+  ImageRecognitionService,
+  VideoRecognitionService,
+} from 'domain/service/RecognitionService';
 
 export default defineComponent({
   components: { Progress, Textarea },
   setup() {
     const { recognitionService } = inject(resourceToken)!;
     const progress = ref(0);
-    const onProgress = (e: number) => (progress.value = e);
+    const onProgress = (e: number) => {
+      progress.value = e;
+    };
 
     watch(
       recognitionService,
@@ -23,7 +29,7 @@ export default defineComponent({
       { immediate: true },
     );
 
-    return { progress, recognitionService, ImageRecognitionService };
+    return { progress, recognitionService, ImageRecognitionService, VideoRecognitionService };
   },
 });
 </script>
@@ -34,6 +40,11 @@ export default defineComponent({
       v-else-if="recognitionService instanceof ImageRecognitionService"
       class="resize-none w-full h-full p-2 outline-none"
       v-model:value="recognitionService.result.value"
-    ></Textarea>
+    />
+    <Textarea
+      v-else-if="recognitionService instanceof VideoRecognitionService"
+      class="resize-none w-full h-full p-2 outline-none"
+      :value="recognitionService.result.value?.join('')"
+    />
   </div>
 </template>

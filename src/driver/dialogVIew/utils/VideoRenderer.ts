@@ -14,7 +14,7 @@ class HTMLVideoRenderer implements VideoRenderer {
     this.canvasEl = document.createElement('canvas');
     this.videoEl = document.createElement('video');
     this.videoEl!.addEventListener('loadeddata', () => (this.isLoaded = true));
-    this.videoEl.srcObject = new Blob([video]);
+    this.videoEl.src = window.URL.createObjectURL(new Blob([video]));
   }
 
   private captureFrame(rect?: Rect) {
@@ -22,8 +22,8 @@ class HTMLVideoRenderer implements VideoRenderer {
       throw new Error('no canvas/video');
     }
 
-    this.canvasEl.width = rect?.width ?? this.videoEl.width;
-    this.canvasEl.height = rect?.height ?? this.videoEl.height;
+    this.canvasEl.width = rect?.width ?? this.videoEl.videoWidth;
+    this.canvasEl.height = rect?.height ?? this.videoEl.videoHeight;
 
     const context = this.canvasEl.getContext('2d')!;
 
@@ -43,8 +43,14 @@ class HTMLVideoRenderer implements VideoRenderer {
       context.drawImage(this.videoEl, 0, 0);
     }
 
-    const imageData = context.getImageData(0, 0, this.canvasEl.width, this.canvasEl.height);
-    return imageData.data.buffer;
+    return new Promise<ArrayBuffer>((resolve) => {
+      this.canvasEl!.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('no blob');
+        }
+        blob.arrayBuffer().then(resolve);
+      });
+    });
   }
 
   async render(frame: number, rect?: Rect) {

@@ -13,6 +13,7 @@ export default defineComponent({
     const { isClipping, imgRef, startClip, endClip } = useCropper();
 
     return {
+      selectedResource,
       recognitionService,
       resourceBlobUrl: useBlobUrl(selectedResource),
       getContainer: getRootEl,
@@ -74,8 +75,13 @@ export default defineComponent({
     wrapClassName="full-modal"
   >
     <div class="flex flex-col h-full">
-      <div v-if="resourceBlobUrl" class="flex-grow">
-        <img ref="imgRef" class="block max-w-full" :src="resourceBlobUrl" />
+      <div v-if="selectedResource" class="h-5/6">
+        <img
+          v-if="selectedResource.type === 'image'"
+          ref="imgRef"
+          class="block max-w-full"
+          :src="resourceBlobUrl"
+        />
       </div>
       <div class="text-right bg-white pt-2">
         <Button class="mr-2" @click="endClip">Cancel</Button>
