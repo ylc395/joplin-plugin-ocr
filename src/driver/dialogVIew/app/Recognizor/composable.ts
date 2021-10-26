@@ -30,7 +30,7 @@ export function useCropper() {
         return;
       }
 
-      cropper = new Cropper(imgRef.value, { guides: false, viewMode: 2 });
+      cropper = new Cropper(imgRef.value, { guides: false, viewMode: 2, dragMode: 'move' });
     });
   };
 

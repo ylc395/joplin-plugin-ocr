@@ -14,10 +14,7 @@
 .full-modal .ant-modal-body {
   padding: 0;
   flex: 1;
-}
-
-.full-modal .cropper-container {
-  overflow: hidden;
+  height: 100%;
 }
 
 .anticon {
