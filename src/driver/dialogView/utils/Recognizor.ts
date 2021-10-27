@@ -11,10 +11,26 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   private scheduler = createScheduler();
   private workers: Worker[] = [];
   private dir?: string;
+  private totalJobCount?: number;
   private allLangs?: string[];
   private lastLangs?: string[];
   constructor() {
     super();
+  }
+
+  private jobProgresses: Record<string, number> = {};
+  private handleProgress(jobId: string, progress: number) {
+    if (!this.totalJobCount) {
+      throw new Error('no job count');
+    }
+
+    this.jobProgresses[jobId] = progress;
+    const progressSum = Object.values(this.jobProgresses).reduce(
+      (total, progress) => total + progress,
+      0,
+    );
+
+    this.emit(RecognizorEvents.Progress, progressSum / this.totalJobCount);
   }
 
   private async initNewWorker(langs?: string[]) {
@@ -30,7 +46,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
         }
 
         if (log?.status === 'recognizing text') {
-          this.emit(RecognizorEvents.Progress, log.progress);
+          this.handleProgress(log.jobId, log.progress);
         }
       },
       workerPath: `${this.dir}/assets/lib/tesseract.js/worker.min.js`,
@@ -59,6 +75,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
 
   private destroy() {
     this.stop();
+    this.jobProgresses = {};
     this.removeAllListeners();
   }
 
@@ -69,12 +86,17 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     );
   }
 
-  async recognize(langs: string[], image: ArrayBuffer, rect?: Rect) {
+  async recognize(
+    langs: string[],
+    image: ArrayBuffer,
+    options: { rect?: Rect; jobCount?: number } = {},
+  ) {
     if (this.isNewLang(langs)) {
       await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
     }
 
     this.lastLangs = langs;
+    this.totalJobCount = options.jobCount || 1;
 
     const workerCount = this.scheduler.getNumWorkers();
     const jobCount = this.scheduler.getQueueLen();
@@ -86,7 +108,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     const {
       data: { text },
     } = (await this.scheduler.addJob('recognize', new File([image], 'image'), {
-      rectangle: rect || undefined,
+      rectangle: options.rect,
     })) as RecognizeResult;
 
     return text;

@@ -10,7 +10,11 @@ export enum RecognizorEvents {
 }
 
 export interface Recognizor extends EventEmitter<RecognizorEvents> {
-  recognize(langs: string[], image: ArrayBuffer, rect?: Rect): Promise<string>;
+  recognize(
+    langs: string[],
+    image: ArrayBuffer,
+    options?: { rect?: Rect; jobCount?: number },
+  ): Promise<string>;
   stop(): Promise<void>;
   init(allLangs: string[]): void;
 }

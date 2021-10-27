@@ -40,11 +40,14 @@ export class VideoRecognitionService extends RecognitionService {
     }
 
     const results: Promise<string>[] = [];
+    const frames = await this.getFrames();
     this.isRecognizing.value = true;
 
-    for (const frame of await this.getFrames()) {
+    for (const frame of frames) {
       const frameImage = await this.videoRenderer.render(frame, this.rect.value);
-      results.push(this.recognizor.recognize(this.langs.value, frameImage));
+      results.push(
+        this.recognizor.recognize(this.langs.value, frameImage, { jobCount: frames.length }),
+      );
     }
 
     this.result.value = await Promise.all(results);
