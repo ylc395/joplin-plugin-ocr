@@ -11,6 +11,7 @@ export enum RecognizorEvents {
 
 export interface Recognizor extends EventEmitter<RecognizorEvents> {
   recognize(langs: string[], image: ArrayBuffer, rect?: Rect): Promise<string>;
+  stop(): Promise<void>;
   init(allLangs: string[]): void;
 }
 
@@ -21,7 +22,7 @@ export abstract class RecognitionService {
     this.init();
   }
   abstract readonly isParamsValid: Ref<boolean>;
-  abstract readonly result: Ref<unknown>;
+  abstract readonly result: Ref<unknown | null>;
   abstract recognize(): Promise<void>;
   private readonly joplin = container.resolve(appToken);
   readonly recognizor = container.resolve(recognizorToken);
@@ -37,4 +38,9 @@ export abstract class RecognitionService {
   }
 
   private static allLangs?: string[];
+  async stopRecognizing() {
+    await this.recognizor.stop();
+    this.isRecognizing.value = false;
+    this.result.value = null;
+  }
 }

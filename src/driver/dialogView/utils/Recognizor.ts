@@ -5,12 +5,12 @@ import { recognizorToken, Recognizor, RecognizorEvents } from 'domain/service/Re
 import type { Rect } from 'domain/model/Recognition';
 import { getInstallDir } from 'driver/joplin/webview';
 
+const MAX_WORKER_COUNT = navigator.hardwareConcurrency || 4;
+
 class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Recognizor {
-  private readonly scheduler = createScheduler();
+  private scheduler = createScheduler();
   private workers: Worker[] = [];
   private dir?: string;
-  private initPromise?: Promise<void>;
-  private readonly maxWorkerCount = navigator.hardwareConcurrency;
   private allLangs?: string[];
   private lastLangs?: string[];
   constructor() {
@@ -49,24 +49,17 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   }
 
   async init(allLangs: string[]) {
-    await this.destroy();
-    this.initPromise = (async () => {
-      if (!this.dir) {
-        this.dir = await getInstallDir();
-      }
+    this.destroy();
+    this.allLangs = allLangs;
 
-      this.allLangs = allLangs;
-
-      await this.initNewWorker();
-    })();
+    if (!this.dir) {
+      this.dir = await getInstallDir();
+    }
   }
 
   private destroy() {
-    const workers = this.workers;
-    this.workers = [];
+    this.stop();
     this.removeAllListeners();
-
-    return Promise.all(workers.map((worker) => worker.terminate())).then(() => undefined);
   }
 
   private isNewLang(langs: string[]) {
@@ -77,33 +70,32 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   }
 
   async recognize(langs: string[], image: ArrayBuffer, rect?: Rect) {
-    if (!this.initPromise) {
-      throw new Error('not init yet');
-    }
-
-    await this.initPromise;
-
     if (this.isNewLang(langs)) {
       await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
     }
 
     this.lastLangs = langs;
 
-    const result = this.scheduler.addJob('recognize', new File([image], 'image'), {
-      rectangle: rect || undefined,
-    }) as Promise<RecognizeResult>;
     const workerCount = this.scheduler.getNumWorkers();
     const jobCount = this.scheduler.getQueueLen();
 
-    if (jobCount >= workerCount && workerCount < this.maxWorkerCount) {
-      this.initNewWorker(langs);
+    if (jobCount >= workerCount && workerCount < MAX_WORKER_COUNT) {
+      await this.initNewWorker(langs);
     }
 
     const {
       data: { text },
-    } = await result;
+    } = (await this.scheduler.addJob('recognize', new File([image], 'image'), {
+      rectangle: rect || undefined,
+    })) as RecognizeResult;
 
     return text;
+  }
+
+  async stop() {
+    await this.scheduler.terminate(); // terminate a scheduler wont't reset its state, such as workerCount
+    this.scheduler = createScheduler();
+    this.workers = [];
   }
 }
 
