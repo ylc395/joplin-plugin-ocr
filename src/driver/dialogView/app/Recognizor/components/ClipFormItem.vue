@@ -4,8 +4,12 @@ import { Input, FormItem, Button, Modal } from 'ant-design-vue';
 import { ScissorOutlined } from '@ant-design/icons-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { isWithRect } from 'domain/service/RecognitionService';
-import { getRootEl, selfish } from 'driver/dialogView/utils/helper';
+import { getRootEl } from 'driver/dialogView/utils/helper';
 import { useBlobUrl, useCropper } from '../composable';
+
+const tips = {
+  video: 'Recognition Area for every frame',
+} as Record<string, string | undefined>;
 
 export default defineComponent({
   components: { Input, FormItem, Button, Modal, ScissorOutlined },
@@ -17,7 +21,7 @@ export default defineComponent({
       throw new Error('no recognitionService');
     }
 
-    const { rect } = selfish(recognitionService.value);
+    const { rect } = recognitionService.value;
 
     return {
       selectedResource,
@@ -28,17 +32,13 @@ export default defineComponent({
       imgRef,
       startClip,
       endClip,
-      handleConfirm() {
-        if (isWithRect(recognitionService.value)) {
-          recognitionService.value.rect.value = endClip();
-        }
-      },
+      tip: tips[selectedResource.value?.type || ''],
     };
   },
 });
 </script>
 <template>
-  <FormItem label="Area">
+  <FormItem label="Recognition Area" :help="tip">
     <div class="flex flex-nowrap mb-2">
       <Input readOnly :value="rect?.left" type="number" class="mr-3" addonBefore="X" />
       <Input :value="rect?.width" readOnly type="number" addonBefore="Width" />
@@ -69,10 +69,11 @@ export default defineComponent({
           class="block max-w-full"
           :src="resourceBlobUrl"
         />
+        <canvas v-if="selectedResource.type === 'video'" ref="imgRef" class="block max-w-full" />
       </div>
       <div class="text-right bg-white pt-2">
-        <Button class="mr-2" @click="endClip">Cancel</Button>
-        <Button type="primary" @click="handleConfirm">Confirm</Button>
+        <Button class="mr-2" @click="endClip()">Cancel</Button>
+        <Button type="primary" @click="endClip(true)">Confirm</Button>
       </div>
     </div>
   </Modal>
