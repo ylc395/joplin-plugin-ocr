@@ -1,7 +1,7 @@
 import { container, InjectionToken } from 'tsyringe';
-import { Ref, ref } from 'vue';
+import { Ref, ref, computed } from 'vue';
 import range from 'lodash.range';
-import { RecognitionService } from './Base';
+import { RecognitionService, toRangeArray } from './Base';
 
 export interface PdfRenderer {
   init(pdf: ArrayBuffer): void;
@@ -16,13 +16,47 @@ export class PdfRecognitionService extends RecognitionService {
     this.pdfRenderer.init(pdf);
   }
   private readonly pdfRenderer = container.resolve(pdfRendererToken);
-  range: Array<number | [number, number]> = [];
+  range = {
+    raw: ref(''),
+    parse(): Array<number | [number, number]> {
+      return toRangeArray(this.raw.value).map((v) =>
+        Array.isArray(v) ? (v.map(Number) as [number, number]) : Number(v),
+      );
+    },
+    isValid: computed(() => {
+      if (!this.range.raw.value) {
+        return true;
+      }
+
+      let values: string[];
+
+      try {
+        values = toRangeArray(this.range.raw.value).flat();
+      } catch {
+        return false;
+      }
+
+      const timeReg = /^(\d+:)?(\d{1,2}):\d{1,2}$/;
+      return values.every((v) => timeReg.test(v));
+    }),
+  };
   private get pageNumbers() {
-    return this.range.map((el) => (Array.isArray(el) ? range(...el) : el)).flat();
+    return this.range
+      .parse()
+      .map((el) => (Array.isArray(el) ? range(...el) : el))
+      .flat();
   }
 
-  result: Ref<null | string[]> = ref(null);
+  readonly result: Ref<null | string[]> = ref(null);
+  readonly isParamsValid = computed(() => {
+    return this.langs.value.length > 0 && this.range.isValid.value;
+  });
+
   async recognize() {
+    if (!this.isParamsValid.value) {
+      throw new Error('invalid params');
+    }
+
     const results: Promise<string>[] = [];
 
     for (const pageNumber of this.pageNumbers) {

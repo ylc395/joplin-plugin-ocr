@@ -4,19 +4,24 @@ import { defineComponent, inject, computed } from 'vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import Result from './Result.vue';
 import { useBlobUrl } from '../composable';
+import { selfish } from 'driver/dialogView/utils/helper';
 
 export default defineComponent({
   components: { Button, Form, Result },
   setup() {
     const { recognitionService, selectedResource } = inject(resourceToken)!;
-    const showingResult = computed(
-      () => recognitionService.value?.result.value || recognitionService.value?.isRecognizing.value,
-    );
+
+    if (!recognitionService.value) {
+      throw new Error('no recognitionService');
+    }
+
+    const { result, isParamsValid, recognize, isRecognizing } = selfish(recognitionService.value);
 
     return {
-      showingResult,
-      recognitionService,
+      recognize,
+      isParamsValid,
       resourceBlobUrl: useBlobUrl(selectedResource),
+      showingResult: computed(() => result.value || isRecognizing.value),
     };
   },
 });
@@ -30,17 +35,12 @@ export default defineComponent({
       <slot :resourceBlobUrl="resourceBlobUrl" name="preview" />
     </div>
     <Result v-if="showingResult" class="flex-grow" />
-    <div v-else-if="recognitionService" class="flex flex-col justify-between">
+    <div v-else class="flex flex-col justify-between">
       <Form layout="vertical">
         <slot name="formItems" />
       </Form>
       <div class="text-right">
-        <Button
-          type="primary"
-          @click="recognitionService?.recognize()"
-          :disabled="recognitionService.langs.value.length === 0"
-          >Recognize</Button
-        >
+        <Button type="primary" @click="recognize" :disabled="!isParamsValid">Recognize</Button>
       </div>
     </div>
   </div>

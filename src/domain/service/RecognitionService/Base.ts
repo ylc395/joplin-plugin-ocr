@@ -1,5 +1,5 @@
 import { InjectionToken, container } from 'tsyringe';
-import { Ref, ref } from 'vue';
+import { Ref, ref, computed } from 'vue';
 import type EventEmitter from 'eventemitter3';
 import { appToken, LANGS_SETTING_KEY } from '../AppService';
 
@@ -27,6 +27,7 @@ export abstract class RecognitionService {
   constructor() {
     this.init();
   }
+  abstract readonly isParamsValid: Ref<boolean>;
   abstract readonly result: Ref<unknown>;
   abstract recognize(): Promise<void>;
   private readonly joplin = container.resolve(appToken);
@@ -47,3 +48,14 @@ export abstract class RecognitionService {
 
   private static allLangs?: string[];
 }
+
+export const toRangeArray = (value: string) =>
+  value.split(',').map((v) => {
+    const range = v.split('-');
+
+    if (range.length > 2) {
+      throw new Error('invalid range');
+    }
+
+    return (range.length === 1 ? v : range) as string | [string, string];
+  });

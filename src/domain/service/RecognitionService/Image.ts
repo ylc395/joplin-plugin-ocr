@@ -1,4 +1,4 @@
-import { Ref, toRaw, ref } from 'vue';
+import { Ref, toRaw, ref, computed } from 'vue';
 import { RecognitionService, Rect } from './Base';
 
 export class ImageRecognitionService extends RecognitionService {
@@ -6,7 +6,10 @@ export class ImageRecognitionService extends RecognitionService {
     super();
   }
 
-  result: Ref<string> = ref('');
+  readonly isParamsValid = computed(() => {
+    return this.langs.value.length > 0;
+  });
+  readonly result: Ref<string> = ref('');
   readonly rect: Ref<Rect | undefined> = ref(undefined);
 
   async recognize() {

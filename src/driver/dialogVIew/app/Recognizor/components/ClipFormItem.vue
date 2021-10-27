@@ -4,7 +4,7 @@ import { Input, FormItem, Button, Modal } from 'ant-design-vue';
 import { ScissorOutlined } from '@ant-design/icons-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { isWithRect } from 'domain/service/RecognitionService';
-import { getRootEl } from 'driver/dialogView/utils/helper';
+import { getRootEl, selfish } from 'driver/dialogView/utils/helper';
 import { useBlobUrl, useCropper } from '../composable';
 
 export default defineComponent({
@@ -13,16 +13,21 @@ export default defineComponent({
     const { recognitionService, selectedResource } = inject(resourceToken)!;
     const { isClipping, imgRef, startClip, endClip } = useCropper();
 
+    if (!isWithRect(recognitionService.value)) {
+      throw new Error('no recognitionService');
+    }
+
+    const { rect } = selfish(recognitionService.value);
+
     return {
       selectedResource,
-      recognitionService,
+      rect,
       resourceBlobUrl: useBlobUrl(selectedResource),
       getContainer: getRootEl,
       isClipping,
       imgRef,
       startClip,
       endClip,
-      isWithRect,
       handleConfirm() {
         if (isWithRect(recognitionService.value)) {
           recognitionService.value.rect.value = endClip();
@@ -33,36 +38,14 @@ export default defineComponent({
 });
 </script>
 <template>
-  <FormItem label="Area" v-if="isWithRect(recognitionService)">
+  <FormItem label="Area">
     <div class="flex flex-nowrap mb-2">
-      <Input
-        readOnly
-        :value="recognitionService.rect.value?.left"
-        type="number"
-        class="mr-3"
-        addonBefore="X"
-      />
-      <Input
-        :value="recognitionService.rect.value?.width"
-        readOnly
-        type="number"
-        addonBefore="Width"
-      />
+      <Input readOnly :value="rect?.left" type="number" class="mr-3" addonBefore="X" />
+      <Input :value="rect?.width" readOnly type="number" addonBefore="Width" />
     </div>
     <div class="flex flex-nowrap mb-2">
-      <Input
-        :value="recognitionService.rect.value?.top"
-        readOnly
-        type="number"
-        class="mr-3"
-        addonBefore="Y"
-      />
-      <Input
-        :value="recognitionService.rect.value?.height"
-        readOnly
-        type="number"
-        addonBefore="Height"
-      />
+      <Input :value="rect?.top" readOnly type="number" class="mr-3" addonBefore="Y" />
+      <Input :value="rect?.height" readOnly type="number" addonBefore="Height" />
     </div>
     <Button block @click="startClip">
       <template #icon><ScissorOutlined /></template>

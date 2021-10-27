@@ -9,7 +9,7 @@ export default defineComponent({
   components: { FormItem, Input, CameraOutlined },
   setup() {
     const { selectedResource } = inject(resourceToken)!;
-    const { range, updateRange, validateStatus } = useRange();
+    const { range, validateStatus } = useRange();
     const { capture } = useFrameCapture();
 
     return {
@@ -17,9 +17,8 @@ export default defineComponent({
       validateStatus,
       capture: () => {
         const time = capture();
-        updateRange(range.value ? `${range.value},${time}` : time);
+        range.value = range.value ? `${range.value},${time}` : time;
       },
-      handleChange: (e: InputEvent) => updateRange((e.target as HTMLInputElement).value || ''),
       label: computed(() => {
         switch (selectedResource.value?.type) {
           case 'pdf':
@@ -46,11 +45,7 @@ export default defineComponent({
 </script>
 <template>
   <FormItem name="frames" :validateStatus="validateStatus" :label="label" :help="help">
-    <Input
-      :value="range"
-      @change="handleChange"
-      placeholder="Left empty to recognize all frames of video"
-    >
+    <Input v-model:value="range" placeholder="Left empty to recognize all frames of video">
       <template #addonAfter>
         <CameraOutlined @click="capture" />
       </template>

@@ -8,15 +8,16 @@ export default defineComponent({
   setup() {
     const { recognitionService } = inject(resourceToken)!;
 
-    return { recognitionService };
+    if (!recognitionService.value) {
+      throw new Error('no recognitionService');
+    }
+
+    return { allLangs: recognitionService.value.allLangs, langs: recognitionService.value.langs };
   },
 });
 </script>
 <template>
-  <FormItem label="Languages" v-if="recognitionService">
-    <CheckboxGroup
-      :options="recognitionService.allLangs.value"
-      v-model:value="recognitionService.langs.value"
-    />
+  <FormItem label="Languages">
+    <CheckboxGroup :options="allLangs" v-model:value="langs" />
   </FormItem>
 </template>
