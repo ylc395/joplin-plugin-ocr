@@ -17,12 +17,12 @@ class Attacher {
     webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'markdownOcrRequest', payload });
   }
 
-  init() {
-    document.body.appendChild(this.btnContainerEl);
-    // this event is not documented, but can be found in
-    // https://github.com/laurent22/joplin/blob/cbfc646745f2774fbe89e30c8020cfe5e6465545/packages/renderer/MdToHtml/rules/mermaid_render.js#L38
-    document.addEventListener('joplin-noteDidUpdate', this.clearButtons.bind(this));
-    document.addEventListener('joplin-noteDidUpdate', attachToPdf);
+  private attachToImages() {
+    for (const img of document.querySelectorAll('img')) {
+      if (img.complete) {
+        attachToImage(img, this.btnContainerEl);
+      }
+    }
 
     document.body.addEventListener(
       'load',
@@ -33,6 +33,19 @@ class Attacher {
       },
       true,
     );
+  }
+
+  private attachToPdfs() {
+    attachToPdf();
+    document.addEventListener('joplin-noteDidUpdate', attachToPdf);
+  }
+
+  private attachToVideos() {
+    for (const video of document.querySelectorAll('video')) {
+      if (video.readyState > 0) {
+        attachToVideo(video, this.btnContainerEl);
+      }
+    }
 
     document.body.addEventListener(
       'loadedmetadata',
@@ -43,6 +56,17 @@ class Attacher {
       },
       true,
     );
+  }
+
+  init() {
+    document.body.appendChild(this.btnContainerEl);
+    // this event is not documented, but can be found in
+    // https://github.com/laurent22/joplin/blob/cbfc646745f2774fbe89e30c8020cfe5e6465545/packages/renderer/MdToHtml/rules/mermaid_render.js#L38
+    document.addEventListener('joplin-noteDidUpdate', this.clearButtons.bind(this));
+
+    this.attachToImages();
+    // this.attachToPdfs();
+    this.attachToVideos();
 
     document.addEventListener('click', (e) => {
       let target = e.target as HTMLElement;
