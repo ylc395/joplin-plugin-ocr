@@ -3,34 +3,31 @@ import type { Rect } from 'domain/model/Recognition';
 import { videoRendererToken, VideoRenderer } from 'domain/service/RecognitionService';
 
 class HTMLVideoRenderer implements VideoRenderer {
-  private videoEl?: HTMLVideoElement;
-  private canvasEl?: HTMLCanvasElement;
-  private isLoaded = false;
+  private readonly videoEl = document.createElement('video');
+  private readonly canvasEl = document.createElement('canvas');
   private isRendering = false;
-  init(video: ArrayBuffer) {
-    if (this.videoEl || this.canvasEl) {
-      throw new Error('can not init video render again!');
-    }
+  private metadataLoadedPromise?: Promise<void>;
 
-    this.canvasEl = document.createElement('canvas');
-    this.videoEl = document.createElement('video');
-    this.videoEl!.addEventListener('loadeddata', () => (this.isLoaded = true));
+  init(video: ArrayBuffer) {
     this.videoEl.src = window.URL.createObjectURL(new Blob([video]));
+    this.metadataLoadedPromise = new Promise<void>((resolve) => {
+      this.videoEl.addEventListener('loadedmetadata', function handler() {
+        resolve();
+        this.removeEventListener('loadedmetadata', handler);
+      });
+    });
   }
 
-  getVideoLength() {
-    if (!this.videoEl) {
-      throw new Error('no video el');
+  async getVideoLength() {
+    if (!this.metadataLoadedPromise) {
+      throw new Error('not init');
     }
 
+    await this.metadataLoadedPromise;
     return this.videoEl.duration;
   }
 
   private captureFrame(rect?: Rect) {
-    if (!this.canvasEl || !this.videoEl) {
-      throw new Error('no canvas/video');
-    }
-
     this.canvasEl.width = rect?.width ?? this.videoEl.videoWidth;
     this.canvasEl.height = rect?.height ?? this.videoEl.videoHeight;
 
@@ -52,10 +49,11 @@ class HTMLVideoRenderer implements VideoRenderer {
       context.drawImage(this.videoEl, 0, 0);
     }
 
-    return new Promise<ArrayBuffer>((resolve) => {
+    return new Promise<ArrayBuffer>((resolve, reject) => {
       this.canvasEl!.toBlob((blob) => {
         if (!blob) {
-          throw new Error('no blob');
+          reject(new Error('no blob'));
+          return;
         }
         blob.arrayBuffer().then(resolve);
       });
@@ -63,25 +61,26 @@ class HTMLVideoRenderer implements VideoRenderer {
   }
 
   async render(frame: number, rect?: Rect) {
-    if (!this.isLoaded) {
-      throw new Error('not loaded yet');
-    }
-
     if (this.isRendering) {
       throw new Error('can not render during rendering');
     }
 
+    if (!this.metadataLoadedPromise) {
+      throw new Error('not init');
+    }
+
+    await this.metadataLoadedPromise;
     this.isRendering = true;
     const result = new Promise<ArrayBuffer>((resolve) => {
       const seekedHandler = async () => {
         resolve(await this.captureFrame(rect));
-        this.videoEl!.removeEventListener('seeked', seekedHandler);
+        this.videoEl.removeEventListener('seeked', seekedHandler);
         this.isRendering = false;
       };
-      this.videoEl!.addEventListener('seeked', seekedHandler);
+      this.videoEl.addEventListener('seeked', seekedHandler);
     });
 
-    this.videoEl!.currentTime = frame;
+    this.videoEl.currentTime = frame;
     return result;
   }
 }

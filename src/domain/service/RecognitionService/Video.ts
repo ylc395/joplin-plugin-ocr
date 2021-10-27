@@ -7,7 +7,7 @@ import { RecognitionService } from './Base';
 export interface VideoRenderer {
   init(video: ArrayBuffer): void;
   render(frame: number, rect?: Rect): Promise<ArrayBuffer>;
-  getVideoLength(): number;
+  getVideoLength(): Promise<number>;
 }
 
 export const videoRendererToken: InjectionToken<VideoRenderer> = Symbol();
@@ -25,11 +25,11 @@ export class VideoRecognitionService extends RecognitionService {
   range = new VideoRange();
   sampleInterval: number = 1;
   readonly result: Ref<null | string[]> = ref(null);
-  private get frames() {
+  private async getFrames() {
     const ranges = this.range.toArray();
 
     if (ranges.length === 0) {
-      return range(0, this.videoRenderer.getVideoLength(), this.sampleInterval);
+      return range(0, await this.videoRenderer.getVideoLength(), this.sampleInterval);
     }
 
     return ranges.map((el) => (Array.isArray(el) ? range(...el, this.sampleInterval) : el)).flat();
@@ -42,7 +42,7 @@ export class VideoRecognitionService extends RecognitionService {
     const results: Promise<string>[] = [];
     this.isRecognizing.value = true;
 
-    for (const frame of this.frames) {
+    for (const frame of await this.getFrames()) {
       const frameImage = await this.videoRenderer.render(frame, this.rect.value);
       results.push(this.recognizor.recognize(this.langs.value, frameImage));
     }
