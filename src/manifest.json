@@ -2,11 +2,11 @@
   "manifest_version": 1,
   "id": "ylc395.joplinOcr",
   "app_min_version": "2.2",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "name": "OCR",
-  "description": "",
+  "description": "OCR for images, videos, pdf documents in your Joplin notes",
   "author": "ylc395",
-  "homepage_url": "",
-  "repository_url": "",
+  "homepage_url": "https://github.com/ylc395/joplin-plugin-ocr",
+  "repository_url": "https://github.com/ylc395/joplin-plugin-ocr",
   "keywords": []
 }

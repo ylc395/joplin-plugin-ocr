@@ -1,24 +1,29 @@
-# Joplin Plugin
+# Joplin OCR
 
-This is a template to create a new Joplin plugin.
+**This plugin is still in development stage, but some features are available.**
 
-The main two files you will want to look at are:
+Feature & UI suggestions / bug reports are welcome!
 
-- `/src/index.ts`, which contains the entry point for the plugin source code.
-- `/src/manifest.json`, which is the plugin manifest. It contains information such as the plugin a name, version, etc.
+## Features
 
-## Building the plugin
+- OCR for local/remote images
+- OCR for local/remote videos
 
-The plugin is built using Webpack, which creates the compiled code in `/dist`. A JPL archive will also be created at the root, which can use to distribute the plugin.
+![](./doc/ocr.gif)
 
-To build the plugin, simply run `npm run dist`.
+## User Guide
 
-The project is setup to use TypeScript, although you can change the configuration to use plain JavaScript.
+Before starting using this plugin, please set the **Language codes**:
 
-## Updating the plugin framework
+![](./doc/setting.png)
 
-To update the plugin framework, run `npm run update`.
+All available Language Code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md
 
-In general this command tries to do the right thing - in particular it's going to merge the changes in package.json and .gitignore instead of overwriting. It will also leave "/src" as well as README.md untouched.
+In Note View Panel, click the icon on top-right corner to start OCR
 
-The file that may cause problem is "webpack.config.js" because it's going to be overwritten. For that reason, if you want to change it, consider creating a separate JavaScript file and include it in webpack.config.js. That way, when you update, you only have to restore the line that include your file.
+![](./doc/icon.png)
+
+## Roadmap
+
+- OCR for local PDFs
+- ...
