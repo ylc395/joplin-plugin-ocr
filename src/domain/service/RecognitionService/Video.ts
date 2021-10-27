@@ -1,9 +1,8 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref, computed } from 'vue';
 import range from 'lodash.range';
-import { RecognitionService, Rect, toRangeArray } from './Base';
-
-export { Rect } from './Base';
+import { Rect, VideoRange } from '../../model/Recognition';
+import { RecognitionService } from './Base';
 
 export interface VideoRenderer {
   init(video: ArrayBuffer): void;
@@ -23,49 +22,11 @@ export class VideoRecognitionService extends RecognitionService {
   });
   readonly rect: Ref<Rect | undefined> = ref(undefined);
   private readonly videoRenderer = container.resolve(videoRendererToken);
-  range = {
-    raw: ref(''),
-    parse(): Array<number | [number, number]> {
-      const toSeconds = (v: string) => {
-        const nums = v.split(':').map(Number);
-
-        if (nums.length === 2) {
-          const [minute, second] = nums;
-          return minute * 60 + second;
-        }
-
-        if (nums.length === 3) {
-          const [hour, minute, second] = nums;
-          return hour * 3600 + minute * 60 + second;
-        }
-
-        throw new Error('invalid time');
-      };
-      return toRangeArray(this.raw.value).map((v) =>
-        Array.isArray(v) ? (v.map(toSeconds) as [number, number]) : toSeconds(v),
-      );
-    },
-    isValid: computed(() => {
-      if (!this.range.raw.value) {
-        return true;
-      }
-
-      let values: string[];
-
-      try {
-        values = toRangeArray(this.range.raw.value).flat();
-      } catch {
-        return false;
-      }
-
-      const timeReg = /^(\d+:)?(\d{1,2}):\d{1,2}$/;
-      return values.every((v) => timeReg.test(v));
-    }),
-  };
+  range = new VideoRange();
   sampleInterval: number = 1;
   readonly result: Ref<null | string[]> = ref(null);
   private get frames() {
-    const ranges = this.range.parse();
+    const ranges = this.range.toArray();
 
     if (ranges.length === 0) {
       return range(0, this.videoRenderer.getVideoLength(), this.sampleInterval);

@@ -1,14 +1,8 @@
 import { InjectionToken, container } from 'tsyringe';
-import { Ref, ref, computed } from 'vue';
+import { Ref, ref } from 'vue';
 import type EventEmitter from 'eventemitter3';
 import { appToken, LANGS_SETTING_KEY } from '../AppService';
-
-export interface Rect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import type { Rect } from '../../model/Recognition';
 
 export enum RecognizorEvents {
   Progress = 'PROGRESS',
@@ -48,19 +42,3 @@ export abstract class RecognitionService {
 
   private static allLangs?: string[];
 }
-
-export const toRangeArray = (value: string) => {
-  if (!value) {
-    return [];
-  }
-
-  return value.split(',').map((v) => {
-    const range = v.split('-');
-
-    if (range.length > 2) {
-      throw new Error('invalid range');
-    }
-
-    return (range.length === 1 ? v : range) as string | [string, string];
-  });
-};

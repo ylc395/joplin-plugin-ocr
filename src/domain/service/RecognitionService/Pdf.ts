@@ -1,7 +1,8 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref, computed } from 'vue';
 import range from 'lodash.range';
-import { RecognitionService, toRangeArray } from './Base';
+import { PdfRange } from 'domain/model/Recognition';
+import { RecognitionService } from './Base';
 
 export interface PdfRenderer {
   init(pdf: ArrayBuffer): void;
@@ -16,33 +17,10 @@ export class PdfRecognitionService extends RecognitionService {
     this.pdfRenderer.init(pdf);
   }
   private readonly pdfRenderer = container.resolve(pdfRendererToken);
-  range = {
-    raw: ref(''),
-    parse(): Array<number | [number, number]> {
-      return toRangeArray(this.raw.value).map((v) =>
-        Array.isArray(v) ? (v.map(Number) as [number, number]) : Number(v),
-      );
-    },
-    isValid: computed(() => {
-      if (!this.range.raw.value) {
-        return true;
-      }
-
-      let values: string[];
-
-      try {
-        values = toRangeArray(this.range.raw.value).flat();
-      } catch {
-        return false;
-      }
-
-      const timeReg = /^(\d+:)?(\d{1,2}):\d{1,2}$/;
-      return values.every((v) => timeReg.test(v));
-    }),
-  };
+  range = new PdfRange();
   private get pageNumbers() {
     return this.range
-      .parse()
+      .toArray()
       .map((el) => (Array.isArray(el) ? range(...el) : el))
       .flat();
   }

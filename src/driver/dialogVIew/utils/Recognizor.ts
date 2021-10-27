@@ -1,12 +1,8 @@
 import { container } from 'tsyringe';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
 import EventEmitter from 'eventemitter3';
-import {
-  recognizorToken,
-  Recognizor,
-  Rect,
-  RecognizorEvents,
-} from 'domain/service/RecognitionService';
+import { recognizorToken, Recognizor, RecognizorEvents } from 'domain/service/RecognitionService';
+import type { Rect } from 'domain/model/Recognition';
 import { getInstallDir } from 'driver/joplin/webview';
 
 class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Recognizor {
