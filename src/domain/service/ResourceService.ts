@@ -27,7 +27,9 @@ export class ResourceService {
   readonly resources: Ref<Resource[]> = ref([]);
   readonly isMultipleResource = ref(false);
   readonly selectedResource: Ref<Resource | null> = ref(null);
+  readonly loadingStatus = ref('');
   private async init() {
+    this.loadingStatus.value = 'loading resource...';
     const { resources } = await this.joplin.getResources();
 
     this.resources.value = Array.isArray(resources) ? resources : [resources];
@@ -46,7 +48,12 @@ export class ResourceService {
     this.recognitionService.value = null;
 
     if (isUrlResource(resource) && !resource.body) {
-      await this.downloadUrlResource(resource);
+      try {
+        await this.downloadUrlResource(resource);
+      } catch (error) {
+        this.loadingStatus.value = `fail to load resource: ${String(error)}`;
+        return;
+      }
     }
 
     const body = isUrlResource(resource) ? resource.body! : resource.file.body;
@@ -59,6 +66,8 @@ export class ResourceService {
     if (resource.type !== 'unsupported') {
       this.recognitionService.value = new constructors[resource.type](body);
     }
+
+    this.loadingStatus.value = '';
   }
 
   private async downloadUrlResource(resource: UrlResource) {

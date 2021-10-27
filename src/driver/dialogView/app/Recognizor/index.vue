@@ -9,9 +9,9 @@ import VideoRecognizor from './Video.vue';
 export default defineComponent({
   components: { ImageRecognizor, PdfRecognizor, VideoRecognizor },
   setup() {
-    const { selectedResource, recognitionService } = inject(resourceToken)!;
+    const { selectedResource, recognitionService, loadingStatus } = inject(resourceToken)!;
 
-    return { isUrlResource, selectedResource, recognitionService };
+    return { isUrlResource, selectedResource, recognitionService, loadingStatus };
   },
 });
 </script>
@@ -21,5 +21,5 @@ export default defineComponent({
     <PdfRecognizor v-if="selectedResource.type === 'pdf'" />
     <VideoRecognizor v-if="selectedResource.type === 'video'" />
   </template>
-  <div v-else>Loading resource...</div>
+  <div v-else>{{ loadingStatus }}</div>
 </template>
