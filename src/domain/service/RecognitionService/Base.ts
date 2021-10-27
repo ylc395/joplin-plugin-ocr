@@ -35,9 +35,11 @@ export abstract class RecognitionService {
   readonly allLangs: Ref<string[]> = ref([]);
 
   private async init() {
-    this.allLangs.value =
-      RecognitionService.allLangs ||
-      (await this.joplin.getSettingOf<string>(LANGS_SETTING_KEY)).split(',');
+    if (!RecognitionService.allLangs) {
+      const allLangsStr = await this.joplin.getSettingOf<string>(LANGS_SETTING_KEY);
+      RecognitionService.allLangs = allLangsStr ? allLangsStr.split(',') : [];
+    }
+    RecognitionService.allLangs = this.allLangs.value;
     this.recognizor.init(this.allLangs.value);
   }
 

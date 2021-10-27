@@ -15,9 +15,12 @@ export default defineComponent({
       throw new Error('no recognitionService');
     }
 
-    const { result, isParamsValid, recognize, isRecognizing } = selfish(recognitionService.value);
+    const { result, isParamsValid, recognize, isRecognizing, allLangs } = selfish(
+      recognitionService.value,
+    );
 
     return {
+      allLangs,
       recognize,
       isParamsValid,
       resourceBlobUrl: useBlobUrl(selectedResource),
@@ -34,14 +37,20 @@ export default defineComponent({
     >
       <slot :resourceBlobUrl="resourceBlobUrl" name="preview" />
     </div>
-    <Result v-if="showingResult" class="flex-grow" />
-    <div v-else class="flex flex-col justify-between">
-      <Form layout="vertical">
-        <slot name="formItems" />
-      </Form>
-      <div class="text-right">
-        <Button type="primary" @click="recognize" :disabled="!isParamsValid">Recognize</Button>
+    <p v-if="allLangs.length === 0" class="mb-4 flex items-center">
+      This plugin is not enabled now. Please set available language codes for this plugin in Joplin
+      Setting Panel to enable this plugin.
+    </p>
+    <template v-else>
+      <Result v-if="showingResult" class="flex-grow" />
+      <div v-else class="flex flex-col justify-between">
+        <Form layout="vertical">
+          <slot name="formItems" />
+        </Form>
+        <div class="text-right">
+          <Button type="primary" @click="recognize" :disabled="!isParamsValid">Recognize</Button>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>

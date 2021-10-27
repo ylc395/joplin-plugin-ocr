@@ -116,7 +116,7 @@ export class Joplin {
         value: '',
         section: SECTION_NAME,
         description:
-          'Available language code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md',
+          'Set all languages that may be used in your daily life & work. Split them by comma(s). Available language code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md',
       },
     });
   }

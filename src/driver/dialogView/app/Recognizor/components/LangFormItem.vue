@@ -17,7 +17,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <FormItem label="Languages">
+  <FormItem label="Choose language(s) for this recognition" v-if="allLangs.length > 0">
     <CheckboxGroup :options="allLangs" v-model:value="langs" />
   </FormItem>
 </template>
