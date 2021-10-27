@@ -37,7 +37,6 @@ export class ResourceService {
   }
   async selectResource(index: number) {
     const resource = this.resources.value[index];
-    const oldRecognitionService = this.recognitionService.value;
 
     if (resource === this.selectedResource.value) {
       return;
@@ -45,7 +44,6 @@ export class ResourceService {
 
     this.selectedResource.value = resource;
     this.recognitionService.value = null;
-    oldRecognitionService?.destroy();
 
     if (isUrlResource(resource) && !resource.body) {
       await this.downloadUrlResource(resource);

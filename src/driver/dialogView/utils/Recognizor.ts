@@ -49,7 +49,8 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   }
 
   async init(allLangs: string[]) {
-    this.initPromise = new Promise(async (resolve) => {
+    await this.destroy();
+    this.initPromise = (async () => {
       if (!this.dir) {
         this.dir = await getInstallDir();
       }
@@ -57,11 +58,10 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
       this.allLangs = allLangs;
 
       await this.initNewWorker();
-      resolve();
-    });
+    })();
   }
 
-  destroy() {
+  private destroy() {
     const workers = this.workers;
     this.workers = [];
     this.removeAllListeners();
@@ -77,6 +77,10 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   }
 
   async recognize(langs: string[], image: ArrayBuffer, rect?: Rect) {
+    if (!this.initPromise) {
+      throw new Error('not init yet');
+    }
+
     await this.initPromise;
 
     if (this.isNewLang(langs)) {

@@ -11,8 +11,7 @@ export enum RecognizorEvents {
 
 export interface Recognizor extends EventEmitter<RecognizorEvents> {
   recognize(langs: string[], image: ArrayBuffer, rect?: Rect): Promise<string>;
-  destroy(): Promise<void>;
-  init(allLangs: string[]): Promise<void>;
+  init(allLangs: string[]): void;
 }
 
 export const recognizorToken: InjectionToken<Recognizor> = Symbol();
@@ -29,9 +28,6 @@ export abstract class RecognitionService {
   readonly isRecognizing = ref(false);
   readonly langs: Ref<string[]> = ref([]);
   readonly allLangs: Ref<string[]> = ref([]);
-  destroy() {
-    return this.recognizor.destroy();
-  }
 
   private async init() {
     this.allLangs.value =
