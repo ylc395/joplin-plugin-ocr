@@ -8,6 +8,7 @@ export { Rect } from './Base';
 export interface VideoRenderer {
   init(video: ArrayBuffer): void;
   render(frame: number, rect?: Rect): Promise<ArrayBuffer>;
+  getVideoLength(): number;
 }
 
 export const videoRendererToken: InjectionToken<VideoRenderer> = Symbol();
@@ -61,13 +62,16 @@ export class VideoRecognitionService extends RecognitionService {
       return values.every((v) => timeReg.test(v));
     }),
   };
-  sampleInterval: number = 1000;
+  sampleInterval: number = 1;
   readonly result: Ref<null | string[]> = ref(null);
   private get frames() {
-    return this.range
-      .parse()
-      .map((el) => (Array.isArray(el) ? range(...el, this.sampleInterval) : el))
-      .flat();
+    const ranges = this.range.parse();
+
+    if (ranges.length === 0) {
+      return range(0, this.videoRenderer.getVideoLength(), this.sampleInterval);
+    }
+
+    return ranges.map((el) => (Array.isArray(el) ? range(...el, this.sampleInterval) : el)).flat();
   }
   async recognize() {
     if (!this.isParamsValid.value) {

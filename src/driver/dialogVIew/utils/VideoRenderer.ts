@@ -17,6 +17,14 @@ class HTMLVideoRenderer implements VideoRenderer {
     this.videoEl.src = window.URL.createObjectURL(new Blob([video]));
   }
 
+  getVideoLength() {
+    if (!this.videoEl) {
+      throw new Error('no video el');
+    }
+
+    return this.videoEl.duration;
+  }
+
   private captureFrame(rect?: Rect) {
     if (!this.canvasEl || !this.videoEl) {
       throw new Error('no canvas/video');

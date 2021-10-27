@@ -49,8 +49,12 @@ export abstract class RecognitionService {
   private static allLangs?: string[];
 }
 
-export const toRangeArray = (value: string) =>
-  value.split(',').map((v) => {
+export const toRangeArray = (value: string) => {
+  if (!value) {
+    return [];
+  }
+
+  return value.split(',').map((v) => {
     const range = v.split('-');
 
     if (range.length > 2) {
@@ -59,3 +63,4 @@ export const toRangeArray = (value: string) =>
 
     return (range.length === 1 ? v : range) as string | [string, string];
   });
+};
