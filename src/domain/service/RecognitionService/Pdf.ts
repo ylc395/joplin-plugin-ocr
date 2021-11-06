@@ -19,7 +19,7 @@ export class PdfRecognitionService extends RecognitionService {
   }
   private readonly pdfRenderer = container.resolve(pdfRendererToken);
   readonly range = new PdfRange();
-  readonly scale = ref(1);
+  readonly scale = ref(2);
   readonly totalPage = this.pdfRenderer.totalPage;
   private get pageNumbers() {
     const ranges = this.range.toArray();
@@ -40,11 +40,14 @@ export class PdfRecognitionService extends RecognitionService {
     }
 
     const results: Promise<string>[] = [];
+    const pageNumbers = this.pageNumbers;
     this.isRecognizing.value = true;
 
-    for (const pageNumber of this.pageNumbers) {
+    for (const pageNumber of pageNumbers) {
       const pageImage = await this.pdfRenderer.render(pageNumber);
-      results.push(this.recognizor.recognize(this.langs.value, pageImage));
+      results.push(
+        this.recognizor.recognize(this.langs.value, pageImage, { jobCount: pageNumbers.length }),
+      );
     }
 
     this.result.value = await Promise.all(results);

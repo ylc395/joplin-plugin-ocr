@@ -86,17 +86,13 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     );
   }
 
-  async recognize(
-    langs: string[],
-    image: ArrayBuffer,
-    options: { rect?: Rect; jobCount?: number } = {},
-  ) {
+  async recognize(langs: string[], image: ArrayBuffer, options: { rect?: Rect; jobCount: number }) {
     if (this.isNewLang(langs)) {
       await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
     }
 
     this.lastLangs = langs;
-    this.totalJobCount = options.jobCount || 1;
+    this.totalJobCount = options.jobCount;
 
     const workerCount = this.scheduler.getNumWorkers();
     const jobCount = this.scheduler.getQueueLen();

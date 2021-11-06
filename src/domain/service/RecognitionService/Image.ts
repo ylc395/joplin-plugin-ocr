@@ -17,6 +17,7 @@ export class ImageRecognitionService extends RecognitionService {
     this.isRecognizing.value = true;
     this.result.value = await this.recognizor.recognize(toRaw(this.langs.value), this.image, {
       rect: toRaw(this.rect.value),
+      jobCount: 1,
     });
     this.isRecognizing.value = false;
   }
