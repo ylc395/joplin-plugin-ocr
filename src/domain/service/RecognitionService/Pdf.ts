@@ -5,8 +5,9 @@ import { PdfRange } from 'domain/model/Recognition';
 import { RecognitionService } from './Base';
 
 export interface PdfRenderer {
-  init(pdf: ArrayBuffer): void;
+  init(pdf: ArrayBuffer, scale: Ref<number>): void;
   render(page: number): Promise<ArrayBuffer>;
+  totalPage: Ref<number>;
 }
 
 export const pdfRendererToken: InjectionToken<PdfRenderer> = Symbol();
@@ -14,18 +15,21 @@ export const pdfRendererToken: InjectionToken<PdfRenderer> = Symbol();
 export class PdfRecognitionService extends RecognitionService {
   constructor(pdf: ArrayBuffer) {
     super();
-    this.pdfRenderer.init(pdf);
+    this.pdfRenderer.init(pdf, this.scale);
   }
   private readonly pdfRenderer = container.resolve(pdfRendererToken);
-  range = new PdfRange();
+  readonly range = new PdfRange();
+  readonly scale = ref(1);
+  readonly totalPage = this.pdfRenderer.totalPage;
   private get pageNumbers() {
-    return this.range
-      .toArray()
-      .map((el) => (Array.isArray(el) ? range(...el) : el))
-      .flat();
+    const ranges = this.range.toArray();
+
+    return ranges.length > 0
+      ? ranges.map((el) => (Array.isArray(el) ? range(...el) : el)).flat()
+      : range(1, this.pdfRenderer.totalPage.value + 1);
   }
 
-  readonly result: Ref<null | string[]> = ref(null);
+  readonly result: Ref<undefined | string[]> = ref();
   readonly isParamsValid = computed(() => {
     return this.langs.value.length > 0 && this.range.isValid.value;
   });
@@ -36,6 +40,7 @@ export class PdfRecognitionService extends RecognitionService {
     }
 
     const results: Promise<string>[] = [];
+    this.isRecognizing.value = true;
 
     for (const pageNumber of this.pageNumbers) {
       const pageImage = await this.pdfRenderer.render(pageNumber);
@@ -43,5 +48,6 @@ export class PdfRecognitionService extends RecognitionService {
     }
 
     this.result.value = await Promise.all(results);
+    this.isRecognizing.value = false;
   }
 }

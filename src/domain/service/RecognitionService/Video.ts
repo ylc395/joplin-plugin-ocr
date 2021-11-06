@@ -51,6 +51,6 @@ export class VideoRecognitionService extends RecognitionService {
     }
 
     this.result.value = await Promise.all(results);
-    this.isRecognizing.value = true;
+    this.isRecognizing.value = false;
   }
 }

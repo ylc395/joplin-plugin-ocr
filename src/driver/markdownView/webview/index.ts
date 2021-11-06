@@ -65,7 +65,7 @@ class Attacher {
     document.addEventListener('joplin-noteDidUpdate', this.clearButtons.bind(this));
 
     this.attachToImages();
-    // this.attachToPdfs();
+    this.attachToPdfs();
     this.attachToVideos();
 
     document.addEventListener('click', (e) => {

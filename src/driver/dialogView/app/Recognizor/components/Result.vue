@@ -6,6 +6,7 @@ import {
   RecognizorEvents,
   ImageRecognitionService,
   VideoRecognitionService,
+  PdfRecognitionService,
 } from 'domain/service/RecognitionService';
 
 export default defineComponent({
@@ -22,13 +23,19 @@ export default defineComponent({
       progress.value = e;
     });
 
-    return { progress, recognitionService, ImageRecognitionService, VideoRecognitionService };
+    return {
+      progress,
+      recognitionService,
+      ImageRecognitionService,
+      VideoRecognitionService,
+      PdfRecognitionService,
+    };
   },
 });
 </script>
 <template>
   <div class="flex justify-center items-center">
-    <div v-if="progress < 1" class="flex flex-col justify-center">
+    <div v-if="recognitionService?.isRecognizing.value" class="flex flex-col justify-center">
       <Progress type="circle" :percent="Math.floor(progress * 100)" />
       <Button @click="recognitionService?.stopRecognizing()" class="mt-4">Cancel</Button>
     </div>
@@ -38,7 +45,10 @@ export default defineComponent({
       v-model:value="recognitionService.result.value"
     />
     <Textarea
-      v-else-if="recognitionService instanceof VideoRecognitionService"
+      v-else-if="
+        recognitionService instanceof VideoRecognitionService ||
+        recognitionService instanceof PdfRecognitionService
+      "
       class="resize-none w-full h-full p-2 outline-none"
       :value="recognitionService.result.value?.join('')"
     />

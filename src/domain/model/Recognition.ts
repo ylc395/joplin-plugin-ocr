@@ -89,7 +89,7 @@ export class PdfRange {
       return false;
     }
 
-    const timeReg = /^(\d+:)?(\d{1,2}):\d{1,2}$/;
-    return values.every((v) => timeReg.test(v));
+    const pageReg = /^(\d+-)?\d+$/;
+    return values.every((v) => pageReg.test(v));
   });
 }

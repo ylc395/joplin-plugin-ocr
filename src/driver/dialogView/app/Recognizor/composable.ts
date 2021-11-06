@@ -1,7 +1,7 @@
 import Cropper from 'cropperjs';
 import mapValues from 'lodash.mapvalues';
 import 'cropperjs/dist/cropper.css';
-import { computed, Ref, ref, nextTick, inject, provide } from 'vue';
+import { computed, Ref, ref, nextTick, inject } from 'vue';
 import { Resource, isUrlResource } from 'domain/model/Resource';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { isWithRange, isWithRect } from 'domain/service/RecognitionService';
@@ -42,8 +42,8 @@ export function useRange() {
 }
 
 const videoRef: Ref<null | HTMLVideoElement> = ref(null);
-export function useFrameCapture() {
-  const capture = () => {
+export function useFrameTime() {
+  const getTime = () => {
     if (!videoRef.value) {
       throw new Error('no video el');
     }
@@ -56,11 +56,11 @@ export function useFrameCapture() {
     return `${hour}:${minute}:${second}`;
   };
 
-  return { videoRef, capture };
+  return { videoRef, getTime };
 }
 
 export function useCropper() {
-  const { videoRef } = useFrameCapture();
+  const { videoRef } = useFrameTime();
   const isClipping = ref(false);
   const imgRef: Ref<HTMLImageElement | HTMLCanvasElement | null> = ref(null);
   const { recognitionService } = inject(resourceToken)!;
