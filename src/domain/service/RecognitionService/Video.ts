@@ -1,8 +1,8 @@
 import { container, InjectionToken } from 'tsyringe';
 import { Ref, ref, computed } from 'vue';
-import range from 'lodash.range';
-import { Rect, VideoRange } from '../../model/Recognition';
+import { range, Rect, VideoRange } from '../../model/Recognition';
 import { RecognitionService } from './Base';
+import { secondsToFrameName } from 'domain/model/Resource';
 
 export interface VideoRenderer {
   init(video: ArrayBuffer): void;
@@ -24,23 +24,16 @@ export class VideoRecognitionService extends RecognitionService {
   private readonly videoRenderer = container.resolve(videoRendererToken);
   range = new VideoRange();
   sampleInterval: number = 1;
-  readonly result: Ref<null | string[]> = ref(null);
-  private async getFrames() {
-    const ranges = this.range.toArray();
-
-    if (ranges.length === 0) {
-      return range(0, await this.videoRenderer.getVideoLength(), this.sampleInterval);
-    }
-
-    return ranges.map((el) => (Array.isArray(el) ? range(...el, this.sampleInterval) : el)).flat();
-  }
+  readonly result: Ref<undefined | Array<{ name: string; result: string }>> = ref();
   async recognize() {
     if (!this.isParamsValid.value) {
       throw new Error('invalid params');
     }
 
     const results: Promise<string>[] = [];
-    const frames = await this.getFrames();
+    let frames = await this.range.toFrames();
+    frames = frames.length > 0 ? frames : range([0, await this.videoRenderer.getVideoLength()]);
+
     this.isRecognizing.value = true;
 
     for (const frame of frames) {
@@ -50,7 +43,10 @@ export class VideoRecognitionService extends RecognitionService {
       );
     }
 
-    this.result.value = await Promise.all(results);
+    this.result.value = (await Promise.all(results)).map((result, i) => ({
+      result,
+      name: secondsToFrameName(frames[i]),
+    }));
     this.isRecognizing.value = false;
   }
 }

@@ -40,3 +40,11 @@ export const getResourceTypeFromMime = (mime: string): ResourceType => {
 
   return 'unsupported';
 };
+
+export function secondsToFrameName(seconds: number) {
+  const hour = Math.floor(seconds / 3600);
+  const minute = Math.floor((seconds % 3600) / 60);
+  const second = Math.floor((seconds % 3600) % 60);
+
+  return `${hour}:${minute}:${second}`;
+}

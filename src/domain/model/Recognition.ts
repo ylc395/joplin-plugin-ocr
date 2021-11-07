@@ -10,7 +10,6 @@ export interface Rect {
 interface Range {
   raw: Ref<string>;
   isValid: Ref<boolean>;
-  toArray(): Array<number | [number, number]>;
 }
 
 const toRangeArray = (value: string) => {
@@ -29,9 +28,19 @@ const toRangeArray = (value: string) => {
   });
 };
 
+export const range = ([start, end]: [number, number]) => {
+  const result = [];
+
+  for (let i = start; i <= end; i++) {
+    result.push(i);
+  }
+
+  return result;
+};
+
 export class VideoRange implements Range {
   readonly raw = ref('');
-  toArray() {
+  toFrames() {
     const toSeconds = (v: string) => {
       const nums = v.split(':').map(Number);
 
@@ -47,9 +56,11 @@ export class VideoRange implements Range {
 
       throw new Error('invalid time');
     };
-    return toRangeArray(this.raw.value).map((v) =>
+    const ranges = toRangeArray(this.raw.value).map((v) =>
       Array.isArray(v) ? (v.map(toSeconds) as [number, number]) : toSeconds(v),
     );
+
+    return ranges.map((v) => (Array.isArray(v) ? range(v) : v)).flat();
   }
   readonly isValid = computed(() => {
     if (!this.raw.value) {
@@ -71,10 +82,12 @@ export class VideoRange implements Range {
 
 export class PdfRange {
   readonly raw = ref('');
-  toArray() {
-    return toRangeArray(this.raw.value).map((v) =>
+  toPages() {
+    const ranges = toRangeArray(this.raw.value).map((v) =>
       Array.isArray(v) ? (v.map(Number) as [number, number]) : Number(v),
     );
+
+    return ranges.map((v) => (Array.isArray(v) ? range(v) : v)).flat();
   }
   readonly isValid = computed(() => {
     if (!this.raw.value) {

@@ -46,7 +46,6 @@
     "cropperjs": "^1.5.12",
     "eventemitter3": "^4.0.7",
     "lodash.mapvalues": "^4.6.0",
-    "lodash.range": "^3.2.0",
     "pdfjs-dist": "^2.10.377",
     "reflect-metadata": "^0.1.13",
     "tailwindcss": "^2.2.17",

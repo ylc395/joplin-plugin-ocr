@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent, inject, ref } from 'vue';
-import { Progress, Textarea, Button } from 'ant-design-vue';
+import { defineComponent, inject, ref, watch } from 'vue';
+import { Progress, Textarea, Button, Select } from 'ant-design-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import {
   RecognizorEvents,
@@ -10,10 +10,12 @@ import {
 } from 'domain/service/RecognitionService';
 
 export default defineComponent({
-  components: { Progress, Textarea, Button },
+  components: { Progress, Textarea, Button, Select, SelectOption: Select.Option },
   setup() {
     const { recognitionService } = inject(resourceToken)!;
     const progress = ref(0);
+    const resultIndex = ref(0);
+    const updateResultIndex = (num: string) => (resultIndex.value = Number(num));
 
     if (!recognitionService.value) {
       throw new Error('no recognitionService');
@@ -26,6 +28,8 @@ export default defineComponent({
     return {
       progress,
       recognitionService,
+      resultIndex,
+      updateResultIndex,
       ImageRecognitionService,
       VideoRecognitionService,
       PdfRecognitionService,
@@ -39,18 +43,40 @@ export default defineComponent({
       <Progress type="circle" :percent="Math.floor(progress * 100)" />
       <Button @click="recognitionService?.stopRecognizing()" class="mt-4">Cancel</Button>
     </div>
-    <Textarea
-      v-else-if="recognitionService instanceof ImageRecognitionService"
-      class="resize-none w-full h-full p-2 outline-none"
-      v-model:value="recognitionService.result.value"
-    />
-    <Textarea
-      v-else-if="
-        recognitionService instanceof VideoRecognitionService ||
-        recognitionService instanceof PdfRecognitionService
-      "
-      class="resize-none w-full h-full p-2 outline-none"
-      :value="recognitionService.result.value?.join('')"
-    />
+    <template v-if="recognitionService?.result.value">
+      <Textarea
+        v-if="recognitionService instanceof ImageRecognitionService"
+        class="resize-none w-full h-full p-2 outline-none"
+        v-model:value="recognitionService.result.value"
+      />
+      <div
+        v-if="
+          recognitionService instanceof VideoRecognitionService ||
+          recognitionService instanceof PdfRecognitionService
+        "
+        class="flex flex-col w-full h-full"
+      >
+        <Textarea
+          class="resize-none w-full flex-grow p-2 outline-none mb-2"
+          v-model:value="recognitionService.result.value[resultIndex].result"
+        />
+        <div>
+          <Select
+            class="w-28"
+            v-if="recognitionService.result.value.length > 1"
+            :value="resultIndex"
+            @change="updateResultIndex"
+          >
+            <SelectOption
+              v-for="({ name }, index) of recognitionService.result.value"
+              :key="name"
+              :value="index"
+            >
+              {{ name }}
+            </SelectOption>
+          </Select>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
