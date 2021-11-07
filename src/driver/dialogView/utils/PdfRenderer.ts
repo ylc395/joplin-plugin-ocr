@@ -74,6 +74,8 @@ export class PdfViewer {
     // rotation 360 is a workaround for pdfjs' bug
     // @see https://github.com/mozilla/pdf.js/issues/10400#issuecomment-707918672
     const viewport = pdfPage.getViewport({ rotation: 360, scale: this.renderer.scale.value });
+    this.canvasEl.value.width = viewport.width;
+    this.canvasEl.value.height = viewport.height;
 
     await pdfPage.render({ canvasContext, viewport }).promise;
   }

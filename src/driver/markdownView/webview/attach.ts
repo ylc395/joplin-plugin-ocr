@@ -61,7 +61,7 @@ export function attachToPdf() {
     const index = [...samePdfEls].indexOf(el);
     const button = createButton({ url, type: 'pdf', index });
 
-    // don't know why this can work
+    // don't know why this can work (for preventing default)
     button.addEventListener('click', (e) => {
       el.onclick = null;
     });

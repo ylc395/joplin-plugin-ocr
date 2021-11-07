@@ -53,9 +53,12 @@ export default defineComponent({
 <template>
   <Layout>
     <template #preview>
-      <canvas class="w-full h-full" ref="canvasRef" />
+      <div class="w-full overflow-scroll">
+        <canvas ref="canvasRef" />
+      </div>
       <div v-if="viewer" class="flex justify-center items-center">
         <Button
+          v-if="totalPage > 1"
           class="transform scale-75"
           @click="prevPage"
           :disabled="viewer.currentPage.value === 1"
@@ -63,6 +66,7 @@ export default defineComponent({
         ></Button>
         <span class="mx-2">{{ viewer.currentPage.value }} / {{ totalPage }}</span>
         <Button
+          v-if="totalPage > 1"
           class="transform scale-75"
           @click="nextPage"
           :disabled="viewer.currentPage.value === totalPage"
@@ -76,7 +80,7 @@ export default defineComponent({
       <FormItem
         class="mt-4"
         label="Scale"
-        help="Scale PDF to make text clear enough, otherwise recognition will be inaccuracy"
+        help="Scale PDF to make text clear (large) enough, otherwise recognition will be inaccuracy"
       >
         <span class="w-12 inline-block"> {{ scale }} </span>
         <Button class="transform scale-75" @click="zoomOut" :disabled="scale === 1"

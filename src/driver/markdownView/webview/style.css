@@ -12,6 +12,7 @@
   opacity: 0.3;
   padding: 6px;
   outline: 0;
+  cursor: pointer;
 }
 
 a > .ocr-button {
