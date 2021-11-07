@@ -1,6 +1,6 @@
 # Joplin OCR
 
-**This plugin is still in development stage, but some features are available.**
+**This plugin is still in development stage.Everything may change, but some features are available now.**
 
 Feature & UI suggestions / bug reports are welcome!
 
@@ -8,6 +8,7 @@ Feature & UI suggestions / bug reports are welcome!
 
 - OCR for local/remote images
 - OCR for local/remote videos
+- OCR for local PDFs
 
 ![](./doc/ocr.gif)
 
@@ -22,8 +23,3 @@ All available Language Code can be found at https://github.com/naptha/tesseract.
 In Note View Panel, click the icon on top-right corner to start OCR
 
 ![](./doc/icon.png)
-
-## Roadmap
-
-- OCR for local PDFs
-- ...
