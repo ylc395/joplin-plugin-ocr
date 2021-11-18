@@ -6,6 +6,8 @@ Feature & UI suggestions / bug reports are welcome!
 
 ## Features
 
+All of them work offline, except for downloading language package(s) on first time usage
+
 - OCR for local/remote images
 - OCR for local/remote videos
 - OCR for local PDFs
