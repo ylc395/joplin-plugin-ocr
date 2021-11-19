@@ -16,5 +16,5 @@ const app = createApp(App);
 const rootEl = getRootEl();
 
 rootEl.style.width = `${WINDOW_WIDTH}px`;
-rootEl.style.height = `${WINDOW_HEIGHT}px`;
+rootEl.style.minHeight = `${WINDOW_HEIGHT}px`;
 app.mount(rootEl);

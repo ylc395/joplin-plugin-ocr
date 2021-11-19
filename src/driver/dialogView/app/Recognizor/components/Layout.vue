@@ -32,7 +32,16 @@ export default defineComponent({
 <template>
   <div class="flex">
     <div
-      class="h-screen w-60 flex flex-col items-center mr-4 flex-shrink-0 overflow-auto"
+      class="
+        h-screen
+        w-60
+        flex flex-col
+        items-center
+        justify-center
+        mr-4
+        flex-shrink-0
+        overflow-auto
+      "
       v-if="resourceBlobUrl"
     >
       <slot :resourceBlobUrl="resourceBlobUrl" name="preview" />

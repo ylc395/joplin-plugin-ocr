@@ -78,7 +78,7 @@ export default defineComponent({
       <CommonFormItem />
       <FramesFormItem />
       <FormItem
-        class="mt-4"
+        class="mt-4 mb-2"
         label="Scale"
         help="Scale PDF to make text clear (large) enough, otherwise recognition will be inaccuracy"
       >
