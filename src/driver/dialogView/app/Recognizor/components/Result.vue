@@ -43,6 +43,9 @@ export default defineComponent({
       <Progress type="circle" :percent="Math.floor(progress * 100)" />
       <Button @click="recognitionService?.stopRecognizing()" class="mt-4">Cancel</Button>
     </div>
+    <div v-if="recognitionService?.errorMessage.value">
+      {{ recognitionService.errorMessage.value }}
+    </div>
     <template v-if="recognitionService?.result.value">
       <Textarea
         v-if="recognitionService instanceof ImageRecognitionService"

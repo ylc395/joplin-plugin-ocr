@@ -43,10 +43,14 @@ export class VideoRecognitionService extends RecognitionService {
       );
     }
 
-    this.result.value = (await Promise.all(results)).map((result, i) => ({
-      result,
-      name: secondsToFrameName(frames[i]),
-    }));
+    try {
+      this.result.value = (await Promise.all(results)).map((result, i) => ({
+        result,
+        name: secondsToFrameName(frames[i]),
+      }));
+    } catch (error) {
+      this.errorMessage.value = String(error);
+    }
     this.isRecognizing.value = false;
   }
 }

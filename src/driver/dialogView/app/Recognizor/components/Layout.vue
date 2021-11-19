@@ -15,7 +15,7 @@ export default defineComponent({
       throw new Error('no recognitionService');
     }
 
-    const { result, isParamsValid, recognize, isRecognizing, allLangs } = selfish(
+    const { result, isParamsValid, recognize, isRecognizing, allLangs, errorMessage } = selfish(
       recognitionService.value,
     );
 
@@ -24,7 +24,7 @@ export default defineComponent({
       recognize,
       isParamsValid,
       resourceBlobUrl: useBlobUrl(selectedResource),
-      showingResult: computed(() => result.value || isRecognizing.value),
+      showingResult: computed(() => result.value || isRecognizing.value || errorMessage.value),
     };
   },
 });

@@ -44,10 +44,14 @@ export class PdfRecognitionService extends RecognitionService {
       );
     }
 
-    this.result.value = (await Promise.all(results)).map((result, i) => ({
-      result,
-      name: `Page ${pageNumbers[i]}`,
-    }));
+    try {
+      this.result.value = (await Promise.all(results)).map((result, i) => ({
+        result,
+        name: `Page ${pageNumbers[i]}`,
+      }));
+    } catch (error) {
+      this.errorMessage.value = String(error);
+    }
     this.isRecognizing.value = false;
   }
 }

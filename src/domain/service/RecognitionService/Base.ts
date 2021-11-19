@@ -31,6 +31,7 @@ export abstract class RecognitionService {
   private readonly joplin = container.resolve(appToken);
   readonly recognizor = container.resolve(recognizorToken);
   readonly isRecognizing = ref(false);
+  readonly errorMessage = ref('');
   readonly langs: Ref<string[]> = ref([]);
   readonly allLangs: Ref<string[]> = ref([]);
 
