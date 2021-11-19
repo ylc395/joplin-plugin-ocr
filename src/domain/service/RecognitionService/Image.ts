@@ -8,7 +8,7 @@ export class ImageRecognitionService extends RecognitionService {
   }
 
   readonly isParamsValid = computed(() => {
-    return this.langs.value.length > 0;
+    return this.params.langs.length > 0;
   });
   readonly result: Ref<string> = ref('');
   readonly rect: Ref<Rect | undefined> = ref(undefined);
@@ -16,7 +16,8 @@ export class ImageRecognitionService extends RecognitionService {
   async recognize() {
     this.isRecognizing.value = true;
     try {
-      this.result.value = await this.recognizor.recognize(toRaw(this.langs.value), this.image, {
+      this.result.value = await this.recognizor.recognize(this.image, {
+        ...this.params,
         rect: toRaw(this.rect.value),
         jobCount: 1,
       });

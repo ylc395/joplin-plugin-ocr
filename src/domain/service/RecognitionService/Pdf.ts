@@ -23,7 +23,7 @@ export class PdfRecognitionService extends RecognitionService {
 
   readonly result: Ref<undefined | Array<{ name: string; result: string }>> = ref();
   readonly isParamsValid = computed(() => {
-    return this.langs.value.length > 0 && this.range.isValid.value;
+    return this.params.langs.length > 0 && this.range.isValid.value;
   });
 
   async recognize() {
@@ -40,7 +40,7 @@ export class PdfRecognitionService extends RecognitionService {
     for (const pageNumber of pageNumbers) {
       const pageImage = await this.pdfRenderer.render(pageNumber);
       results.push(
-        this.recognizor.recognize(this.langs.value, pageImage, { jobCount: pageNumbers.length }),
+        this.recognizor.recognize(pageImage, { ...this.params, jobCount: pageNumbers.length }),
       );
     }
 

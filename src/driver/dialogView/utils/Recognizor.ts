@@ -1,7 +1,12 @@
 import { container } from 'tsyringe';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
 import EventEmitter from 'eventemitter3';
-import { recognizorToken, Recognizor, RecognizorEvents } from 'domain/service/RecognitionService';
+import {
+  recognizorToken,
+  Recognizor,
+  RecognizorEvents,
+  RecognizorParams,
+} from 'domain/service/RecognitionService';
 import type { Rect } from 'domain/model/Recognition';
 import { getInstallDir } from 'driver/joplin/webview';
 
@@ -33,7 +38,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     this.emit(RecognizorEvents.Progress, progressSum / this.totalJobCount);
   }
 
-  private async initNewWorker(langs?: string[]) {
+  private async initNewWorker({ langs, wordSpacePreserved, whitelist }: RecognizorParams) {
     if (!this.dir || !this.allLangs) {
       throw new Error('not init yet');
     }
@@ -52,7 +57,6 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
       workerPath: `${this.dir}/assets/lib/tesseract.js/worker.min.js`,
       corePath: `${this.dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
     });
-
     await worker.load();
     await worker.loadLanguage(this.allLangs.join('+'));
 
@@ -60,6 +64,10 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
       await worker.initialize(langs.join('+'));
     }
 
+    await worker.setParameters({
+      preserve_interword_spaces: wordSpacePreserved,
+      tessedit_char_whitelist: whitelist,
+    });
     this.scheduler.addWorker(worker);
     this.workers.push(worker);
   }
@@ -86,25 +94,25 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     );
   }
 
-  async recognize(langs: string[], image: ArrayBuffer, options: { rect?: Rect; jobCount: number }) {
-    if (this.isNewLang(langs)) {
-      await Promise.all(this.workers.map((worker) => worker.initialize(langs.join('+'))));
+  async recognize(image: ArrayBuffer, params: RecognizorParams) {
+    if (this.isNewLang(params.langs)) {
+      await Promise.all(this.workers.map((worker) => worker.initialize(params.langs.join('+'))));
     }
 
-    this.lastLangs = langs;
-    this.totalJobCount = options.jobCount;
+    this.lastLangs = params.langs;
+    this.totalJobCount = params.jobCount;
 
     const workerCount = this.scheduler.getNumWorkers();
     const jobCount = this.scheduler.getQueueLen();
 
     if (jobCount >= workerCount && workerCount < MAX_WORKER_COUNT) {
-      await this.initNewWorker(langs);
+      await this.initNewWorker(params);
     }
 
     const {
       data: { text },
     } = (await this.scheduler.addJob('recognize', new File([image], 'image'), {
-      rectangle: options.rect,
+      rectangle: params.rect,
     })) as RecognizeResult;
 
     return text;

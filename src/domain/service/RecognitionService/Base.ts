@@ -1,5 +1,5 @@
 import { InjectionToken, container } from 'tsyringe';
-import { Ref, ref } from 'vue';
+import { Ref, ref, reactive } from 'vue';
 import type EventEmitter from 'eventemitter3';
 import { appToken, LANGS_SETTING_KEY } from '../AppService';
 import type { Rect } from '../../model/Recognition';
@@ -9,12 +9,16 @@ export enum RecognizorEvents {
   Finished = 'FINISHED',
 }
 
+export interface RecognizorParams {
+  langs: string[];
+  wordSpacePreserved: '0' | '1';
+  whitelist: string;
+  rect?: Rect;
+  jobCount?: number;
+}
+
 export interface Recognizor extends EventEmitter<RecognizorEvents> {
-  recognize(
-    langs: string[],
-    image: ArrayBuffer,
-    options: { rect?: Rect; jobCount: number },
-  ): Promise<string>;
+  recognize(image: ArrayBuffer, params: RecognizorParams): Promise<string>;
   stop(): Promise<void>;
   init(allLangs: string[]): void;
 }
@@ -32,8 +36,12 @@ export abstract class RecognitionService {
   readonly recognizor = container.resolve(recognizorToken);
   readonly isRecognizing = ref(false);
   readonly errorMessage = ref('');
-  readonly langs: Ref<string[]> = ref([]);
   readonly allLangs: Ref<string[]> = ref([]);
+  readonly params = reactive<RecognizorParams>({
+    langs: [],
+    wordSpacePreserved: '0',
+    whitelist: '',
+  });
 
   private async init() {
     if (!RecognitionService.allLangs) {

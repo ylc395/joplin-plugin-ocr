@@ -18,7 +18,7 @@ export class VideoRecognitionService extends RecognitionService {
     this.videoRenderer.init(video);
   }
   readonly isParamsValid = computed(() => {
-    return this.langs.value.length > 0 && this.range.isValid.value;
+    return this.params.langs.length > 0 && this.range.isValid.value;
   });
   readonly rect: Ref<Rect | undefined> = ref(undefined);
   private readonly videoRenderer = container.resolve(videoRendererToken);
@@ -39,7 +39,7 @@ export class VideoRecognitionService extends RecognitionService {
     for (const frame of frames) {
       const frameImage = await this.videoRenderer.render(frame, this.rect.value);
       results.push(
-        this.recognizor.recognize(this.langs.value, frameImage, { jobCount: frames.length }),
+        this.recognizor.recognize(frameImage, { ...this.params, jobCount: frames.length }),
       );
     }
 
