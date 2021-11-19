@@ -11,7 +11,7 @@ import { container } from 'tsyringe';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { PdfRecognitionService } from 'domain/service/RecognitionService';
 import Layout from './components/Layout.vue';
-import LangFormItem from './components/LangFormItem.vue';
+import CommonFormItem from './components/CommonFormItem.vue';
 import FramesFormItem from './components/FramesFormItem.vue';
 import { PdfViewer } from '../../utils/PdfRenderer';
 
@@ -23,7 +23,7 @@ export default defineComponent({
     RightOutlined,
     ZoomInOutlined,
     ZoomOutOutlined,
-    LangFormItem,
+    CommonFormItem,
     FramesFormItem,
     Layout,
   },
@@ -75,7 +75,7 @@ export default defineComponent({
       </div>
     </template>
     <template #formItems>
-      <LangFormItem />
+      <CommonFormItem />
       <FramesFormItem />
       <FormItem
         class="mt-4"

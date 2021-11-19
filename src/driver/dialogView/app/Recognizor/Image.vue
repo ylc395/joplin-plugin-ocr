@@ -1,11 +1,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import LangFormItem from './components/LangFormItem.vue';
+import CommonFormItem from './components/CommonFormItem.vue';
 import ClipFormItem from './components/ClipFormItem.vue';
 import Layout from './components/Layout.vue';
 
 export default defineComponent({
-  components: { LangFormItem, ClipFormItem, Layout },
+  components: { CommonFormItem, ClipFormItem, Layout },
 });
 </script>
 <template>
@@ -14,7 +14,7 @@ export default defineComponent({
       <img :src="resourceBlobUrl" />
     </template>
     <template #formItems>
-      <LangFormItem />
+      <CommonFormItem />
       <ClipFormItem />
     </template>
   </Layout>
