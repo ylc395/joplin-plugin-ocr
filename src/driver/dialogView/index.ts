@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import 'tailwindcss/tailwind.css';
 import './style/index.css';
 import 'driver/joplin/webview';
-import './utils/Recognizor';
 import './utils/Downloader';
 import './utils/VideoRenderer';
 import './utils/PdfRenderer';

@@ -3,37 +3,34 @@ import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
 import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
 import { LANGS_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID, WINDOW_HEIGHT, WINDOW_WIDTH } from 'driver/constants';
-import type { MarkdownOcrRequest } from 'driver/markdownView/type';
-import {
-  GetInstallDirRequest,
-  GetResourcesRequest,
-  GetResourcesResponse,
-  GetSettingOfRequest,
-} from './constants';
+import type { Request, MarkdownOcrRequest, GetResourcesResponse } from '../request';
+import { TesseractRecognizor } from './Recognizor';
 
 export class Joplin {
+  private readonly recognizor = new TesseractRecognizor();
   private dialog?: ViewHandle;
   private ocrRequest?: Promise<GetResourcesResponse>;
-  private async handleRequestFromDialog(
-    request: GetResourcesRequest | GetInstallDirRequest | GetSettingOfRequest,
-  ) {
+  private async handleRequest(request: Request) {
     switch (request.event) {
       case 'getResources':
         return this.ocrRequest;
-      case 'getInstallDir':
-        return joplin.plugins.installationDir();
       case 'getSettingOf':
         return joplin.settings.value(request.payload);
-      default:
-        break;
-    }
-  }
-
-  private handleRequestFromMdView({ event, payload }: MarkdownOcrRequest) {
-    switch (event) {
       case 'markdownOcrRequest':
-        this.startOcr(payload, 'resource');
-        break;
+        return this.startOcr(request.payload, 'resource');
+      case 'intRecognizor':
+        return this.recognizor.init(request.payload.allLangs);
+      case 'recognize':
+        return this.recognizor.recognize(
+          request.payload.image instanceof Uint8Array
+            ? request.payload.image.buffer
+            : request.payload.image,
+          request.payload.params,
+        );
+      case 'stopRecognizing':
+        return this.recognizor.stop();
+      case 'queryProgress':
+        return this.recognizor.progress;
       default:
         break;
     }
@@ -88,7 +85,7 @@ export class Joplin {
   async setupDialog() {
     this.dialog = await joplin.views.dialogs.create('main');
     await joplin.views.dialogs.setButtons(this.dialog, [{ id: 'cancel', title: 'Quit' }]);
-    await joplin.views.panels.onMessage(this.dialog, this.handleRequestFromDialog.bind(this));
+    await joplin.views.panels.onMessage(this.dialog, this.handleRequest.bind(this));
     joplin.views.dialogs.addScript(this.dialog, './driver/dialogView/index.js');
   }
 
@@ -98,7 +95,7 @@ export class Joplin {
       MARKDOWN_SCRIPT_ID,
       './driver/markdownView/joplinPlugin.js',
     );
-    joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.handleRequestFromMdView.bind(this));
+    joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.handleRequest.bind(this));
   }
 
   async setupSetting() {

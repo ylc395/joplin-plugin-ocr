@@ -1,27 +1,18 @@
-import { container } from 'tsyringe';
+import joplin from 'api';
+import { cpus } from 'os';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
-import EventEmitter from 'eventemitter3';
-import {
-  recognizorToken,
-  Recognizor,
-  RecognizorEvents,
-  RecognizorParams,
-} from 'domain/service/RecognitionService';
-import type { Rect } from 'domain/model/Recognition';
-import { getInstallDir } from 'driver/joplin/webview';
+import type { RecognizorParams } from 'domain/service/RecognitionService';
 
-const MAX_WORKER_COUNT = navigator.hardwareConcurrency || 4;
+const MAX_WORKER_COUNT = cpus.length || 4;
 
-class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Recognizor {
+export class TesseractRecognizor {
+  progress?: number;
   private scheduler = createScheduler();
   private workers: Worker[] = [];
   private dir?: string;
   private totalJobCount?: number;
   private allLangs?: string[];
   private lastLangs?: string[];
-  constructor() {
-    super();
-  }
 
   private jobProgresses: Record<string, number> = {};
   private handleProgress(jobId: string, progress: number) {
@@ -35,7 +26,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
       0,
     );
 
-    this.emit(RecognizorEvents.Progress, progressSum / this.totalJobCount);
+    this.progress = progressSum / this.totalJobCount;
   }
 
   private async initNewWorker({ langs, wordSpacePreserved, whitelist }: RecognizorParams) {
@@ -54,8 +45,8 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
           this.handleProgress(log.jobId, log.progress);
         }
       },
-      workerPath: `${this.dir}/assets/lib/tesseract.js/worker.min.js`,
-      corePath: `${this.dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
+      workerPath: `${this.dir}/assets/lib/tesseract.worker.min.js`,
+      // corePath: `${this.dir}/assets/lib/tesseract.js-core/tesseract-core.wasm.js`,
     });
     await worker.load();
     await worker.loadLanguage(this.allLangs.join('+'));
@@ -77,14 +68,13 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     this.allLangs = allLangs;
 
     if (!this.dir) {
-      this.dir = await getInstallDir();
+      this.dir = await joplin.plugins.installationDir();
     }
   }
 
   private destroy() {
     this.stop();
     this.jobProgresses = {};
-    this.removeAllListeners();
   }
 
   private isNewLang(langs: string[]) {
@@ -95,6 +85,8 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
   }
 
   async recognize(image: ArrayBuffer, params: RecognizorParams) {
+    this.progress = 0;
+
     if (this.isNewLang(params.langs)) {
       await Promise.all(this.workers.map((worker) => worker.initialize(params.langs.join('+'))));
     }
@@ -111,7 +103,7 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
 
     const {
       data: { text },
-    } = (await this.scheduler.addJob('recognize', new File([image], 'image'), {
+    } = (await this.scheduler.addJob('recognize', Buffer.from(new Uint8Array(image)), {
       rectangle: params.rect,
     })) as RecognizeResult;
 
@@ -124,5 +116,3 @@ class TesseractRecognizor extends EventEmitter<RecognizorEvents> implements Reco
     this.workers = [];
   }
 }
-
-container.registerSingleton(recognizorToken, TesseractRecognizor);

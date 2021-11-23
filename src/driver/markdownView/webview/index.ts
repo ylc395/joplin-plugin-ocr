@@ -1,6 +1,6 @@
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import { isResourceType } from 'domain/model/Resource';
-import type { MarkdownOcrRequest } from '../type';
+import type { MarkdownOcrRequest } from 'driver/joplin/request';
 import { attachToImage, attachToPdf, attachToVideo, BTN_CLASS_NAME } from './attach';
 
 declare const webviewApi: {

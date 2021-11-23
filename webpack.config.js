@@ -16,6 +16,7 @@ const tar = require('tar');
 const glob = require('glob');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const execSync = require('child_process').execSync;
+const webpack = require('webpack');
 
 const rootDir = path.resolve(__dirname);
 const userConfigFilename = './plugin.config.json';
@@ -153,6 +154,33 @@ const baseConfig = {
   },
 };
 
+const tesseractConfig = {
+  ...baseConfig,
+  entry: './node_modules/tesseract.js/src/worker-script/node/index.js',
+  output: {
+    filename: 'tesseract.worker.min.js',
+    path: path.resolve(distDir, 'assets/lib'),
+  },
+  resolve: {
+    mainFields: ['main']
+  },
+  plugins: [
+    new webpack.NormalModuleReplacementPlugin(
+      /getCore/,
+      path.resolve(rootDir, 'src/lib/tesseract-getCore.js'),
+    ),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'node_modules', 'tesseract.js-core'),
+          to: path.resolve(distDir, 'assets/lib/tesseract.js-core'),
+          toType: 'dir',
+        },
+      ],
+    }),
+  ],
+};
+
 const pluginConfig = Object.assign({}, baseConfig, {
   entry: './src/index.ts',
   resolve: {
@@ -186,15 +214,6 @@ const pluginConfig = Object.assign({}, baseConfig, {
             ],
           },
         },
-        {
-          context: path.resolve(__dirname, 'node_modules'),
-          from: 'tesseract.js-core/tesseract-core.wasm(.js)?',
-          to: path.resolve(__dirname, 'dist/assets/lib'),
-        },
-        {
-          from: 'node_modules/tesseract.js/dist/worker.min.js',
-          to: path.resolve(__dirname, 'dist/assets/lib/tesseract.js/worker.min.js'),
-        },
       ],
     }),
   ],
@@ -211,6 +230,7 @@ const extraScriptConfig = Object.assign({}, baseConfig, webviewConfig, {
 });
 
 const createArchiveConfig = {
+  target: 'node',
   stats: 'errors-only',
   entry: './dist/index.js',
   output: {
@@ -288,7 +308,7 @@ function main(processArgv) {
   const configs = {
     // Builds the main src/index.ts and copy the extra content from /src to
     // /dist including scripts, CSS and any other asset.
-    buildMain: [pluginConfig],
+    buildMain: [pluginConfig, tesseractConfig],
 
     // Builds the extra scripts as defined in plugin.config.json. When doing
     // so, some JavaScript files that were copied in the previous might be
