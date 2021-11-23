@@ -7,7 +7,6 @@ import {
   RecognizorEvents,
   RecognizorParams,
 } from 'domain/service/RecognitionService';
-import type { Rect } from 'domain/model/Recognition';
 import { getInstallDir } from 'driver/joplin/webview';
 
 const MAX_WORKER_COUNT = navigator.hardwareConcurrency || 4;

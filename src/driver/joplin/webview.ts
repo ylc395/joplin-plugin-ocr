@@ -6,7 +6,7 @@ import type {
   GetInstallDirRequest,
   GetInstallDirResponse,
   GetSettingOfRequest,
-} from './constants';
+} from './request';
 
 declare const webviewApi: {
   postMessage: <T>(
