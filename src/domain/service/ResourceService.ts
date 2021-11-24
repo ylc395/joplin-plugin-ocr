@@ -30,12 +30,12 @@ export class ResourceService {
   readonly loadingStatus = ref('');
   private async init() {
     this.loadingStatus.value = 'loading resource...';
-    const { resources } = await this.joplin.getResources();
+    const resource = await this.joplin.getResource();
 
-    this.resources.value = Array.isArray(resources) ? resources : [resources];
-    this.isMultipleResource.value = Array.isArray(resources);
-
-    this.selectResource(0);
+    if (resource) {
+      this.resources.value = [resource];
+      this.selectResource(0);
+    }
   }
   async selectResource(index: number) {
     const resource = this.resources.value[index];

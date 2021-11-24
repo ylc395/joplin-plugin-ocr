@@ -1,4 +1,4 @@
-import type { ResourceType, Resource } from 'domain/model/Resource';
+import type { ResourceType } from 'domain/model/Resource';
 
 export type Request =
   | MarkdownOcrRequest
@@ -26,10 +26,6 @@ export interface GetInstallDirRequest {
 export interface GetSettingOfRequest {
   event: 'getSettingOf';
   payload: string;
-}
-
-export interface GetResourcesResponse {
-  resources: Resource[] | Resource;
 }
 
 export type GetInstallDirResponse = string;

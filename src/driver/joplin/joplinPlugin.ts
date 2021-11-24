@@ -1,66 +1,34 @@
 import joplin from 'api';
 import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
-import { getResourceTypeFromMime, ResourceType } from 'domain/model/Resource';
+import type { ResourceType, Resource } from 'domain/model/Resource';
 import { LANGS_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID, WINDOW_HEIGHT, WINDOW_WIDTH } from 'driver/constants';
-import { GetResourcesResponse, Request, MarkdownOcrRequest } from './request';
+import { Request, MarkdownOcrRequest } from './request';
 
 export class Joplin {
   private dialog?: ViewHandle;
-  private ocrRequest?: Promise<GetResourcesResponse>;
+  private resource?: Resource;
   private async handleRequest(request: Request) {
     switch (request.event) {
       case 'getResources':
-        return this.ocrRequest;
+        return this.resource;
       case 'getInstallDir':
         return joplin.plugins.installationDir();
       case 'getSettingOf':
         return joplin.settings.value(request.payload);
       case 'markdownOcrRequest':
-        return this.startOcr(request.payload, 'resource');
+        return this.startOcr(request.payload);
       default:
         break;
     }
   }
 
-  private async startOcr(
-    { resourceType, index, url }: MarkdownOcrRequest['payload'],
-    urlType: 'resource' | 'note',
-  ) {
+  private async startOcr({ resourceType, index, url }: MarkdownOcrRequest['payload']) {
     if (!this.dialog) {
       throw new Error('no dialog');
     }
 
-    if (urlType === 'resource') {
-      this.ocrRequest = Joplin.getResource(url, resourceType).then((resource) => ({
-        resources: resource,
-      }));
-    }
-
-    if (urlType === 'note') {
-      //todo: handle html elements with url
-      this.ocrRequest = new Promise(async (resolve) => {
-        let allItems: Array<{ id: string; mime: string }> = [];
-        let page = 1;
-        let hasMore = true;
-
-        while (hasMore) {
-          const { items, has_more } = await joplin.data.get(['notes', url, 'resources'], {
-            fields: 'id,mime',
-            page: page++,
-          });
-
-          allItems = allItems.concat(items);
-          hasMore = has_more;
-        }
-
-        const resources = await Promise.all(
-          allItems.map(({ id, mime }) => Joplin.getResource(id, getResourceTypeFromMime(mime))),
-        );
-
-        resolve({ resources });
-      });
-    }
+    this.resource = await Joplin.getResource(url, resourceType);
 
     await joplin.views.dialogs.setHtml(
       this.dialog,
