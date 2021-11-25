@@ -30,7 +30,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <div class="flex">
+  <div class="flex flex-1">
     <div
       class="
         h-screen

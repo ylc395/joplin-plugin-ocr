@@ -8,6 +8,7 @@ import {
   VideoRecognitionService,
 } from './RecognitionService';
 import { appToken } from './AppService';
+import { MonitorService } from './MonitorService';
 
 interface Downloader {
   download(url: string): Promise<{ body: ArrayBuffer; mime: string }>;
@@ -21,11 +22,12 @@ export class ResourceService {
   constructor() {
     this.init();
   }
-  recognitionService: Ref<RecognitionService | null> = shallowRef(null);
+  readonly recognitionService: Ref<RecognitionService | undefined> = shallowRef();
+  readonly monitorService: Ref<MonitorService | undefined> = shallowRef();
   private readonly joplin = container.resolve(appToken);
   private readonly downloader = container.resolve(downloaderToken);
   readonly resources: Ref<Resource[]> = ref([]);
-  readonly isMultipleResource = ref(false);
+  readonly mode: Ref<'single' | 'multiple' | 'monitor' | undefined> = ref();
   readonly selectedResource: Ref<Resource | null> = ref(null);
   readonly loadingStatus = ref('');
   private async init() {
@@ -33,10 +35,19 @@ export class ResourceService {
     const resource = await this.joplin.getResource();
 
     if (resource) {
-      this.resources.value = [resource];
-      this.selectResource(0);
+      this.initSingle(resource);
+    } else {
+      this.monitorService.value = new MonitorService();
+      this.mode.value = 'monitor';
     }
   }
+
+  private initSingle(resource: Resource) {
+    this.resources.value = [resource];
+    this.mode.value = 'single';
+    this.selectResource(0);
+  }
+
   async selectResource(index: number) {
     const resource = this.resources.value[index];
 
@@ -45,7 +56,7 @@ export class ResourceService {
     }
 
     this.selectedResource.value = resource;
-    this.recognitionService.value = null;
+    this.recognitionService.value = undefined;
 
     if (isUrlResource(resource) && !resource.body) {
       try {

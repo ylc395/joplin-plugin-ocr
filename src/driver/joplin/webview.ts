@@ -6,11 +6,18 @@ import type {
   GetInstallDirRequest,
   GetInstallDirResponse,
   GetSettingOfRequest,
+  SetSettingOfRequest,
+  QueryCurrentNoteId,
 } from './request';
 
 declare const webviewApi: {
   postMessage: <T>(
-    payload: GetResourcesRequest | GetInstallDirRequest | GetSettingOfRequest,
+    payload:
+      | GetResourcesRequest
+      | GetInstallDirRequest
+      | GetSettingOfRequest
+      | SetSettingOfRequest
+      | QueryCurrentNoteId,
   ) => Promise<T>;
 };
 
@@ -26,4 +33,12 @@ export const getSettingOf = <T>(key: string) => {
   return webviewApi.postMessage<T>({ event: 'getSettingOf', payload: key });
 };
 
-container.registerInstance(appToken, { getResource, getSettingOf });
+export const setSettingOf = (key: string, value: unknown) => {
+  return webviewApi.postMessage<void>({ event: 'setSettingOf', payload: { key, value } });
+};
+
+export const getCurrentNoteId = () => {
+  return webviewApi.postMessage<string>({ event: 'queryCurrentNoteId' });
+};
+
+container.registerInstance(appToken, { getResource, getSettingOf, setSettingOf, getCurrentNoteId });

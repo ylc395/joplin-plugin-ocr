@@ -1,7 +1,7 @@
 import { InjectionToken, container } from 'tsyringe';
 import { Ref, ref, reactive } from 'vue';
 import type EventEmitter from 'eventemitter3';
-import { appToken, LANGS_SETTING_KEY } from '../AppService';
+import { appToken, LANGS_SETTING_KEY, langsStrToArray } from '../AppService';
 import type { Rect } from '../../model/Recognition';
 
 export enum RecognizorEvents {
@@ -46,9 +46,7 @@ export abstract class RecognitionService {
   private async init() {
     if (!RecognitionService.allLangs) {
       const allLangsStr = await this.joplin.getSettingOf<string>(LANGS_SETTING_KEY);
-      RecognitionService.allLangs = allLangsStr
-        ? allLangsStr.split(',').map((lang) => lang.trim())
-        : [];
+      RecognitionService.allLangs = langsStrToArray(allLangsStr);
     }
     this.allLangs.value = RecognitionService.allLangs;
     this.recognizor.init(this.allLangs.value);

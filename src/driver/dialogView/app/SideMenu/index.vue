@@ -1,24 +1,31 @@
 <script lang="ts">
 import { defineComponent, inject } from 'vue';
+import { Radio } from 'ant-design-vue';
+import { MonitorOutlined } from '@ant-design/icons-vue';
 import { token as resourceToken } from 'domain/service/ResourceService';
-import { isUrlResource } from 'domain/model/Resource';
 
 export default defineComponent({
+  components: { Radio: Radio.Button, RadioGroup: Radio.Group, MonitorOutlined },
   setup() {
-    const { resources, selectResource, isMultipleResource } = inject(resourceToken)!;
+    const { mode } = inject(resourceToken)!;
 
-    return { resources, isUrlResource, selectResource, isMultipleResource };
+    return { mode };
   },
 });
 </script>
 <template>
-  <ol v-if="isMultipleResource">
-    <li
-      v-for="(resource, index) of resources"
-      :key="isUrlResource(resource) ? resource.url : resource.file.id"
-      @click="selectResource(index)"
+  <div v-if="mode !== 'single'" class="w-60 mr-4 flex flex-col">
+    <RadioGroup class="flex" v-model:value="mode">
+      <Radio class="flex-1 text-center" value="monitor">Monitor</Radio>
+      <Radio class="flex-1 text-center" disabled value="multiple">Recognize</Radio>
+    </RadioGroup>
+    <div
+      v-if="mode === 'monitor'"
+      class="text-center flex-grow flex flex-col justify-center text-gray-400"
     >
-      {{ isUrlResource(resource) ? resource.url : resource.file.filename }}
-    </li>
-  </ol>
+      <MonitorOutlined class="text-4xl mb-5" />
+      <p class="my-0">Auto Image Recognition</p>
+      <p class="my-0">For Current Note</p>
+    </div>
+  </div>
 </template>

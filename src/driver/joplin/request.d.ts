@@ -4,6 +4,8 @@ export type Request =
   | MarkdownOcrRequest
   | GetInstallDirRequest
   | GetResourcesRequest
+  | SetSettingOfRequest
+  | QueryCurrentNoteId
   | GetSettingOfRequest;
 
 export interface MarkdownOcrRequest {
@@ -26,6 +28,18 @@ export interface GetInstallDirRequest {
 export interface GetSettingOfRequest {
   event: 'getSettingOf';
   payload: string;
+}
+
+export interface SetSettingOfRequest {
+  event: 'setSettingOf';
+  payload: {
+    key: string;
+    value: unknown;
+  };
+}
+
+export interface QueryCurrentNoteId {
+  event: 'queryCurrentNoteId';
 }
 
 export type GetInstallDirResponse = string;

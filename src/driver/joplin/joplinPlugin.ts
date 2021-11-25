@@ -1,7 +1,7 @@
 import joplin from 'api';
-import { ContentScriptType, SettingItemType, ViewHandle } from 'api/types';
+import { ContentScriptType, SettingItemType, ToolbarButtonLocation, ViewHandle } from 'api/types';
 import type { ResourceType, Resource } from 'domain/model/Resource';
-import { LANGS_SETTING_KEY } from 'domain/service/AppService';
+import { LANGS_SETTING_KEY, MONITOR_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID, WINDOW_HEIGHT, WINDOW_WIDTH } from 'driver/constants';
 import { Request, MarkdownOcrRequest } from './request';
 
@@ -18,17 +18,26 @@ export class Joplin {
         return joplin.settings.value(request.payload);
       case 'markdownOcrRequest':
         return this.startOcr(request.payload);
+      case 'setSettingOf':
+        return joplin.settings.setValue(request.payload.key, request.payload.value);
+      case 'queryCurrentNoteId':
+        return (await joplin.workspace.selectedNote()).id;
       default:
         break;
     }
   }
 
-  private async startOcr({ resourceType, index, url }: MarkdownOcrRequest['payload']) {
+  private async startOcr(request?: MarkdownOcrRequest['payload']) {
     if (!this.dialog) {
       throw new Error('no dialog');
     }
 
-    this.resource = await Joplin.getResource(url, resourceType);
+    this.resource = undefined;
+
+    if (request) {
+      const { resourceType, index, url } = request;
+      this.resource = await Joplin.getResource(url, resourceType);
+    }
 
     await joplin.views.dialogs.setHtml(
       this.dialog,
@@ -71,6 +80,30 @@ export class Joplin {
           'Set all languages that may be used in your daily life & work. Split them by comma(s). Available language code can be found at https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md',
       },
     });
+    await joplin.settings.registerSettings({
+      [MONITOR_SETTING_KEY]: {
+        label: 'Monitor Config',
+        type: SettingItemType.String,
+        public: false,
+        value: '',
+      },
+    });
+  }
+
+  async setupToolbar() {
+    const COMMAND_NAME = 'openOCR';
+    await joplin.commands.register({
+      name: COMMAND_NAME,
+      label: 'Open OCR',
+      execute: this.startOcr.bind(this),
+      iconName: 'fas fa-closed-captioning',
+    });
+
+    await joplin.views.toolbarButtons.create(
+      'openOCRButton',
+      COMMAND_NAME,
+      ToolbarButtonLocation.EditorToolbar,
+    );
   }
 
   private static getResource(url: string, type: ResourceType) {
