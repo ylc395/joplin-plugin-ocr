@@ -27,7 +27,6 @@ export class ResourceService {
   private readonly joplin = container.resolve(appToken);
   private readonly downloader = container.resolve(downloaderToken);
   readonly resources: Ref<Resource[]> = ref([]);
-  readonly mode: Ref<'single' | 'multiple' | 'monitor' | undefined> = ref();
   readonly selectedResource: Ref<Resource | null> = ref(null);
   readonly loadingStatus = ref('');
   private async init() {
@@ -35,17 +34,11 @@ export class ResourceService {
     const resource = await this.joplin.getResource();
 
     if (resource) {
-      this.initSingle(resource);
+      this.resources.value = [resource];
+      this.selectResource(0);
     } else {
       this.monitorService.value = new MonitorService();
-      this.mode.value = 'monitor';
     }
-  }
-
-  private initSingle(resource: Resource) {
-    this.resources.value = [resource];
-    this.mode.value = 'single';
-    this.selectResource(0);
   }
 
   async selectResource(index: number) {

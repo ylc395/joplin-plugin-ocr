@@ -2,26 +2,24 @@
 import { defineComponent, provide } from 'vue';
 import { ResourceService, token as resourceToken } from 'domain/service/ResourceService';
 import { selfish } from '../utils/helper';
-import SideMenu from './SideMenu/index.vue';
 import Recognizor from './Recognizor/index.vue';
-import CommonConfig from './CommonConfig/index.vue';
+import MonitorConfig from './MonitorConfig/index.vue';
 
 export default defineComponent({
-  components: { SideMenu, Recognizor, CommonConfig },
+  components: { Recognizor, MonitorConfig },
   setup() {
     const resourceService = selfish(new ResourceService());
-    const { mode, monitorService } = resourceService;
+    const { monitorService, recognitionService } = resourceService;
 
     provide(resourceToken, resourceService);
 
-    return { mode, monitorService };
+    return { monitorService, recognitionService };
   },
 });
 </script>
 <template>
-  <main class="flex">
-    <SideMenu />
-    <CommonConfig v-if="mode !== 'single' && monitorService" />
-    <Recognizor v-if="mode === 'single'" />
+  <main>
+    <MonitorConfig v-if="monitorService" />
+    <Recognizor v-if="recognitionService" />
   </main>
 </template>
