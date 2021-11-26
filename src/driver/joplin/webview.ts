@@ -4,7 +4,6 @@ import { appToken } from 'domain/service/AppService';
 import type {
   GetResourcesRequest,
   GetInstallDirRequest,
-  GetInstallDirResponse,
   GetSettingOfRequest,
   SetSettingOfRequest,
   QueryCurrentNoteId,
@@ -22,7 +21,7 @@ declare const webviewApi: {
 };
 
 export const getInstallDir = () => {
-  return webviewApi.postMessage<GetInstallDirResponse>({ event: 'getInstallDir' });
+  return webviewApi.postMessage<string>({ event: 'getInstallDir' });
 };
 
 export const getResource = () => {

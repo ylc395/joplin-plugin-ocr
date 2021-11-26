@@ -41,5 +41,3 @@ export interface SetSettingOfRequest {
 export interface QueryCurrentNoteId {
   event: 'queryCurrentNoteId';
 }
-
-export type GetInstallDirResponse = string;
