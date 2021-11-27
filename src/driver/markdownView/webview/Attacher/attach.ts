@@ -3,7 +3,7 @@ import { renderIconDefinitionToSVGElement } from '@ant-design/icons-svg/es/helpe
 import { ResourceType } from 'domain/model/Resource';
 import { attachPopper } from './popper';
 
-export const BTN_CLASS_NAME = 'ocr-button';
+export const BTN_CLASS_NAME = 'joplin-ocr-button';
 const ICON = renderIconDefinitionToSVGElement(ScanOutlined, {
   extraSVGAttrs: { width: '1em', height: '1em', fill: 'currentColor' },
 });

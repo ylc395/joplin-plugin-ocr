@@ -1,6 +1,6 @@
 import { createPopper, Rect } from '@popperjs/core';
 
-const BTN_HIDE_CLASS_NAME = 'ocr-button-hidden';
+const BTN_HIDE_CLASS_NAME = 'joplin-ocr-button-hidden';
 
 export function attachPopper(containerEl: HTMLElement, targetEl: HTMLElement) {
   const popper = createPopper(containerEl, targetEl, {

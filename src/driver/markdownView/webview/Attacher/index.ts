@@ -8,6 +8,10 @@ declare const webviewApi: {
 };
 
 export class Attacher {
+  constructor() {
+    this.init();
+  }
+
   private readonly btnContainerEl = document.createElement('div');
   private clearButtons() {
     this.btnContainerEl.innerHTML = '';
@@ -58,7 +62,7 @@ export class Attacher {
     );
   }
 
-  init() {
+  private init() {
     document.body.appendChild(this.btnContainerEl);
     // this event is not documented, but can be found in
     // https://github.com/laurent22/joplin/blob/cbfc646745f2774fbe89e30c8020cfe5e6465545/packages/renderer/MdToHtml/rules/mermaid_render.js#L38

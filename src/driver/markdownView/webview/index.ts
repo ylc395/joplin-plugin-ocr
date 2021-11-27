@@ -1,4 +1,5 @@
 import { Attacher } from './Attacher';
+import { Recognizor } from './Recognizor';
 
-const attacher = new Attacher();
-attacher.init();
+new Attacher();
+new Recognizor();

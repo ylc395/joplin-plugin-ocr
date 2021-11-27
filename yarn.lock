@@ -3254,6 +3254,11 @@ quick-lru@^5.1.1:
   resolved "https://registry.npmjs.org/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
+radial-bar@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.npmjs.org/radial-bar/-/radial-bar-0.2.2.tgz#e6802fb053d4ab3e4326aaa29ca3978d74bb0f08"
+  integrity sha1-5oAvsFPUqz5DJqqinKOXjXS7Dwg=
+
 randombytes@^2.0.0, randombytes@^2.0.1, randombytes@^2.0.5, randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz#df6f84372f0270dc65cdf6291349ab7a473d4f2a"

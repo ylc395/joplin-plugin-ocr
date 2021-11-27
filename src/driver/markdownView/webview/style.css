@@ -1,4 +1,4 @@
-.ocr-button {
+.joplin-ocr-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +15,7 @@
   cursor: pointer;
 }
 
-a > .ocr-button {
+a > .joplin-ocr-button {
   opacity: 1;
   border-radius: 5px;
   background: transparent;
@@ -27,11 +27,23 @@ a > .ocr-button {
   border: 1px solid currentColor;
 }
 
-.ocr-button:hover {
+.joplin-ocr-button:hover {
   visibility: visible;
   opacity: 0.8;
 }
 
-.ocr-button-hidden {
+.joplin-ocr-button-hidden {
+  visibility: hidden;
+}
+
+.joplin-ocr-mask-container {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.joplin-ocr-mask-container-hidden {
   visibility: hidden;
 }
