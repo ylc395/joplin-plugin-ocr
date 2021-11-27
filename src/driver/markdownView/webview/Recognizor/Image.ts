@@ -8,7 +8,6 @@ import { ViewEvents, ImageEvents } from './constants';
 const OCR_RESULT_PREFIX = 'joplin-ocr-text:';
 const MASK_CONTAINER_CLASS_NAME = 'joplin-ocr-mask-container';
 const MASK_CONTAINER_HIDDEN_CLASS_NAME = 'joplin-ocr-mask-container-hidden';
-const MASK_CLASS_NAME = 'joplin-ocr-mask';
 
 const PROGRESS_STYLE = {
   lineWidth: 4,
@@ -165,7 +164,6 @@ export class OcrImage extends EventEmitter<ImageEvents> {
 
     canvasEl.width = imgEl.width;
     canvasEl.height = imgEl.height;
-    canvasEl.classList.add(MASK_CLASS_NAME);
 
     maskContainerEl.appendChild(canvasEl);
     maskContainerEl.style.height = `${imgEl.height}px`;
