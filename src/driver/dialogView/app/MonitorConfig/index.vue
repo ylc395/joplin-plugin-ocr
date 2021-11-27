@@ -55,6 +55,7 @@ export default defineComponent({
     <div class="flex-1 flex flex-col justify-between min-h-screen">
       <Form layout="vertical">
         <FormItem
+          class="mb-4"
           label="Monitor image insertion on this note"
           :help="`Existing and future image will${
             config.isMonitoring ? '' : ' not'
@@ -63,7 +64,11 @@ export default defineComponent({
           <Switch v-model:checked="config.isMonitoring" />
         </FormItem>
         <template v-if="config.isMonitoring">
-          <FormItem label="What to do with result text">
+          <FormItem
+            class="mb-4"
+            label="What to do with result text"
+            help="Both will modify your note by inserting text as image's alt text"
+          >
             <RadioGroup v-model:value="config.textInsertionType">
               <Radio value="append">Insert After the image</Radio>
               <Radio value="replace">Replace the image</Radio>
