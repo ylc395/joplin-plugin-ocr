@@ -2,6 +2,7 @@
 import { defineComponent, inject } from 'vue';
 import { Checkbox, FormItem, Switch, Input, Button, Form, Radio, message } from 'ant-design-vue';
 import { MonitorOutlined } from '@ant-design/icons-vue';
+import { TextInsertionType } from 'domain/model/Recognition';
 import { token as resourceToken } from 'domain/service/ResourceService';
 import { selfish } from 'driver/dialogView/utils/helper';
 
@@ -41,7 +42,7 @@ export default defineComponent({
       }
     };
 
-    return { setConfig, isConfigValid, config, allLangs };
+    return { setConfig, isConfigValid, config, allLangs, TextInsertionType };
   },
 });
 </script>
@@ -66,12 +67,17 @@ export default defineComponent({
         <template v-if="config.isMonitoring">
           <FormItem
             class="mb-4"
-            label="What to do with result text"
-            help="Both will modify your note by inserting text as image's alt text"
+            label="How to display result"
+            help="All will modify your note by inserting text as image's title"
           >
             <RadioGroup v-model:value="config.textInsertionType">
-              <Radio value="append">Insert After the image</Radio>
-              <Radio value="replace">Replace the image</Radio>
+              <Radio :value="TextInsertionType.Append">Insert After the image</Radio>
+              <Radio :value="TextInsertionType.RealReplace"
+                >Replace the image(remove image on origin note)</Radio
+              >
+              <Radio :value="TextInsertionType.Replace"
+                >Replace the image(but keep image on original note)</Radio
+              >
             </RadioGroup>
           </FormItem>
           <FormItem required label="Choose language(s) for recognitions">

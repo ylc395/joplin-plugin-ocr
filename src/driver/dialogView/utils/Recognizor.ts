@@ -1,12 +1,8 @@
 import { container } from 'tsyringe';
 import { createScheduler, createWorker, RecognizeResult, Worker } from 'tesseract.js';
 import EventEmitter from 'eventemitter3';
-import {
-  recognizorToken,
-  Recognizor,
-  RecognizorEvents,
-  RecognizorParams,
-} from 'domain/service/RecognitionService';
+import type { RecognizorParams } from 'domain/model/Recognition';
+import { recognizorToken, Recognizor, RecognizorEvents } from 'domain/service/RecognitionService';
 import { getInstallDir } from 'driver/joplin/webview';
 
 const MAX_WORKER_COUNT = navigator.hardwareConcurrency || 4;

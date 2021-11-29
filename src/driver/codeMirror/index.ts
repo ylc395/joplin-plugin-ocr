@@ -20,8 +20,15 @@ interface ExtendedEditor extends Editor {
   };
 }
 
+let ws: WebSocket | undefined;
+
 class TextInserter {
   constructor(private readonly context: Context, private readonly editor: ExtendedEditor) {
+    if (ws) {
+      ws.close();
+      ws.onmessage = null;
+    }
+
     this.init();
   }
   private readonly doc = this.editor.getDoc();
@@ -34,15 +41,15 @@ class TextInserter {
       return;
     }
 
-    this.ws = new WebSocket(`ws://127.0.0.1:${port}`);
-    this.ws.addEventListener('message', async (e) => {
+    this.ws = ws = new WebSocket(`ws://127.0.0.1:${port}`);
+    this.ws.onmessage = async (e) => {
       const data: WsMessage = JSON.parse(await e.data.text());
       this.replaceWithOcrText(data);
-    });
+    };
   }
 
   private replaceWithOcrText(data: WsMessage) {
-    const { resourceId, index, text } = data;
+    const { resourceId, index, text, removeNeeded } = data;
     const regex = new RegExp(`!\\[([^\\[\\]]*)\\]\\(:/(${resourceId})(.*)?\\)`, 'g');
     const cursor = this.editor.getSearchCursor(regex);
 
@@ -64,6 +71,11 @@ class TextInserter {
 
     if (!from || !to) {
       throw new Error('search error');
+    }
+
+    if (removeNeeded) {
+      this.doc.replaceRange(text, from, to);
+      return;
     }
 
     const srcMatch = this.doc.getRange(from, to).match(/\((.*)\)$/);

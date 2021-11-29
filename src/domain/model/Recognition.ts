@@ -106,3 +106,22 @@ export class PdfRange {
     return values.every((v) => pageReg.test(v));
   });
 }
+
+export interface RecognizorParams {
+  langs: string[];
+  wordSpacePreserved: '0' | '1';
+  whitelist: string;
+  rect?: Rect;
+  jobCount?: number;
+}
+
+export enum TextInsertionType {
+  Append = 'append',
+  Replace = 'replace',
+  RealReplace = 'realReplace',
+}
+
+export interface MonitorConfig extends RecognizorParams {
+  isMonitoring: boolean;
+  textInsertionType: TextInsertionType;
+}

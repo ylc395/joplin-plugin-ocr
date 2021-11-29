@@ -6,7 +6,7 @@ import type {
   GetWsPortRequest,
 } from 'driver/joplin/request';
 import type { ResourceIdentifier } from 'domain/model/Resource';
-import type { RecognizorParams } from 'domain/service/RecognitionService';
+import { TextInsertionType, MonitorConfig } from 'domain/model/Recognition';
 import { MONITOR_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import { OcrImage } from './Image';
@@ -14,6 +14,7 @@ import { ViewEvents, ImageEvents } from './constants';
 
 export type WsMessage = ResourceIdentifier & {
   text: string;
+  removeNeeded: boolean;
 };
 
 declare const webviewApi: {
@@ -28,7 +29,7 @@ const IMG_SELECTOR = 'img[data-resource-id]';
 export class Recognizor {
   private currentNoteId?: string;
   private dir?: Promise<string>;
-  private params?: RecognizorParams;
+  private params?: MonitorConfig;
   private images: Record<string, OcrImage> = {};
   private initializing?: Promise<void>;
   private masksContainerEl = document.createElement('div');
@@ -136,18 +137,23 @@ export class Recognizor {
       );
 
       this.images[id] = ocrImage;
+    } else {
+      this.images[id].recognize();
     }
   }
 
   private sendRecognitionResult(identifier: ResourceIdentifier, text: string) {
-    if (!this.ws) {
-      throw new Error('no ws');
+    if (!this.ws || !this.params) {
+      throw new Error('no ws/params');
     }
 
-    const data = JSON.stringify({
+    const message: WsMessage = {
       ...identifier,
+      removeNeeded: this.params.textInsertionType === TextInsertionType.RealReplace,
       text,
-    } as WsMessage);
+    };
+
+    const data = JSON.stringify(message);
 
     this.ws.send(data);
   }

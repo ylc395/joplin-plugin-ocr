@@ -3,7 +3,7 @@ import { createPopper, Rect } from '@popperjs/core';
 import { createWorker, Worker } from 'tesseract.js';
 import CircleBar from 'radial-bar';
 import type { ResourceIdentifier } from 'domain/model/Resource';
-import type { RecognizorParams } from 'domain/service/RecognitionService';
+import { MonitorConfig } from 'domain/model/Recognition';
 import { OCR_RESULT_PREFIX } from 'driver/constants';
 import { ViewEvents, ImageEvents } from './constants';
 
@@ -31,11 +31,10 @@ export class OcrImage extends EventEmitter<ImageEvents> {
   private mask?: ReturnType<typeof createPopper>;
   private worker?: Worker;
   private circleBar?: any;
-  private readonly params: RecognizorParams;
+  private readonly params: MonitorConfig;
   private readonly dir: string;
   private readonly view: EventEmitter<ViewEvents>;
   private readonly masksContainer: HTMLDivElement;
-  result?: string;
   constructor(
     private readonly id: ResourceIdentifier,
     {
@@ -45,7 +44,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       masksContainer,
     }: {
       view: EventEmitter<ViewEvents>;
-      params: RecognizorParams;
+      params: MonitorConfig;
       dir: string;
       masksContainer: HTMLDivElement;
     },
@@ -59,21 +58,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     view.on(ViewEvents.NoteUpdated, this.handleNoteUpdated);
     view.on(ViewEvents.NoteChanged, this.destroy);
 
-    const { el } = this;
-
-    if (!el) {
-      throw new Error('no el for image');
-    }
-
-    const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
-
-    if (typeof encodedText === 'string') {
-      this.result = decodeURIComponent(encodedText);
-    }
-
-    if (!this.result) {
-      this.recognize();
-    }
+    this.recognize();
   }
 
   private get el(): HTMLImageElement | undefined {
@@ -86,11 +71,18 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     return el;
   }
 
-  private async recognize() {
+  async recognize() {
     const { el } = this;
 
     if (!el) {
-      throw new Error('no el when recognizing');
+      throw new Error('no el for image');
+    }
+
+    const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
+
+    if (typeof encodedText === 'string') {
+      this.setResult(decodeURIComponent(encodedText));
+      return;
     }
 
     this.createMask(el);
@@ -125,8 +117,18 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       rectangle: this.params.rect,
     });
 
-    this.result = text;
     this.emit(ImageEvents.Completed, text);
+    this.worker.terminate();
+  }
+
+  private setResult(text: string) {
+    const { el } = this;
+
+    if (!el) {
+      throw new Error('no el');
+    }
+
+    el.title = el.title.replace(new RegExp(` ?${OCR_RESULT_PREFIX}(.+)$`), '');
   }
 
   private destroy = () => {
@@ -153,12 +155,10 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       return;
     }
 
-    if (!this.mask) {
-      throw new Error('no mask when noteUpdated');
+    if (this.mask) {
+      this.mask.state.elements.reference = el;
+      this.mask.update();
     }
-
-    this.mask.state.elements.reference = el;
-    this.mask.update();
   };
 
   private createMask(imgEl: HTMLImageElement) {

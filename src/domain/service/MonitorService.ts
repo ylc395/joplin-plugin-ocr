@@ -1,12 +1,7 @@
 import { container } from 'tsyringe';
 import { Ref, ref, computed } from 'vue';
-import { RecognizorParams } from './RecognitionService';
+import { MonitorConfig } from '../model/Recognition';
 import { appToken, MONITOR_SETTING_KEY, LANGS_SETTING_KEY, langsStrToArray } from './AppService';
-
-interface MonitorConfig extends RecognizorParams {
-  isMonitoring: boolean;
-  textInsertionType: 'append' | 'replace';
-}
 
 export class MonitorService {
   constructor() {

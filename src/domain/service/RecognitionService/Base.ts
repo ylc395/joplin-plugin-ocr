@@ -1,20 +1,12 @@
 import { InjectionToken, container } from 'tsyringe';
 import { Ref, ref, reactive } from 'vue';
 import type EventEmitter from 'eventemitter3';
+import type { RecognizorParams } from '../../model/Recognition';
 import { appToken, LANGS_SETTING_KEY, langsStrToArray } from '../AppService';
-import type { Rect } from '../../model/Recognition';
 
 export enum RecognizorEvents {
   Progress = 'PROGRESS',
   Finished = 'FINISHED',
-}
-
-export interface RecognizorParams {
-  langs: string[];
-  wordSpacePreserved: '0' | '1';
-  whitelist: string;
-  rect?: Rect;
-  jobCount?: number;
 }
 
 export interface Recognizor extends EventEmitter<RecognizorEvents> {
