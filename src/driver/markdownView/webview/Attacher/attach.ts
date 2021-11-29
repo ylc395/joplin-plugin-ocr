@@ -34,12 +34,19 @@ export function attachToImage(imgEl: HTMLImageElement, btnContainerEl: HTMLEleme
     return;
   }
 
-  const imgsWithSameResource = imgEl.dataset.resourceId
-    ? document.querySelectorAll(`[data-resource-id="${url}"]`)
-    : document.querySelectorAll(`[src="${url}"]`);
+  let imgsWithSameResource: NodeListOf<HTMLImageElement>;
+
+  try {
+    // if url is data-url of svg or something, querySelectorAll will fail
+    imgsWithSameResource = imgEl.dataset.resourceId
+      ? document.querySelectorAll(`[data-resource-id="${url}"]`)
+      : document.querySelectorAll(`[src="${url}"]`);
+  } catch {
+    return;
+  }
+
   const index = [...imgsWithSameResource].indexOf(imgEl);
   const button = createButton({ url, type: 'image', index }, btnContainerEl);
-
   attachPopper(imgEl, button);
 }
 
