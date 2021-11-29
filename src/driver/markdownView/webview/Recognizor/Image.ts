@@ -35,6 +35,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
   private readonly dir: string;
   private readonly view: EventEmitter<ViewEvents>;
   private readonly masksContainer: HTMLDivElement;
+  private isRecognizing = false;
   constructor(
     private readonly id: ResourceIdentifier,
     {
@@ -72,6 +73,12 @@ export class OcrImage extends EventEmitter<ImageEvents> {
   }
 
   async recognize() {
+    if (this.isRecognizing) {
+      return;
+    }
+
+    this.isRecognizing = true;
+
     const { el } = this;
 
     if (!el) {
@@ -82,6 +89,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
 
     if (typeof encodedText === 'string') {
       this.setResult(decodeURIComponent(encodedText));
+      this.isRecognizing = false;
       return;
     }
 
@@ -118,6 +126,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     });
 
     this.emit(ImageEvents.Completed, text);
+    this.isRecognizing = false;
     this.worker.terminate();
   }
 

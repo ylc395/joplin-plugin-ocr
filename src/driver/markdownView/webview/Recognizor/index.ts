@@ -39,15 +39,18 @@ export class Recognizor {
     this.init();
   }
 
-  private init() {
+  private async init() {
     this.initWs();
     document.addEventListener(
+      // this event is earlier than image load
       'joplin-noteDidUpdate',
       () => (this.initializing = this.handleNoteUpdated()),
     );
 
     this.dir = webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'getInstallDir' });
     document.body.appendChild(this.masksContainerEl);
+
+    // when switch to a new notebook or just start joplin, this event will not fired
     document.body.addEventListener(
       'load',
       async (e) => {
@@ -60,7 +63,10 @@ export class Recognizor {
       true,
     );
 
-    this.initializing = this.handleNoteUpdated();
+    await this.handleNoteUpdated();
+
+    const images = [...document.querySelectorAll(IMG_SELECTOR)] as HTMLImageElement[];
+    images.forEach((el) => this.buildImage(el));
   }
 
   private async initWs() {
