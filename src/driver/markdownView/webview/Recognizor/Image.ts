@@ -17,11 +17,11 @@ const PROGRESS_STYLE = {
   bgFill: '#fff',
   progress: 0,
   isShowInfoText: true,
-  infoStyle: '30px monospace',
   infoColor: '#000',
 };
 
 const getRound = (imgEl: HTMLImageElement) => ({
+  infoStyle: `${Math.min(30, Math.min(imgEl.width, imgEl.height) / 6)}px monospace`,
   radius: Math.min(Math.min(imgEl.width, imgEl.height) / 5, 60),
   x: imgEl.width / 2,
   y: imgEl.height / 2,
