@@ -24,24 +24,22 @@ let ws: WebSocket | undefined;
 
 class TextInserter {
   constructor(private readonly context: Context, private readonly editor: ExtendedEditor) {
-    if (ws) {
-      ws.close();
-      ws.onmessage = null;
-    }
-
     this.init();
   }
   private readonly doc = this.editor.getDoc();
-  private ws?: WebSocket;
+  private ws = ws;
   private async init() {
-    const port = await this.context.postMessage<number>({ event: 'getWsPort' });
+    if (!this.ws) {
+      const port = await this.context.postMessage<number>({ event: 'getWsPort' });
 
-    if (!port && process.env.NODE_ENV === 'development') {
-      setTimeout(this.init.bind(this), 500);
-      return;
+      if (!port && process.env.NODE_ENV === 'development') {
+        setTimeout(this.init.bind(this), 500);
+        return;
+      }
+
+      this.ws = ws = new WebSocket(`ws://127.0.0.1:${port}`);
     }
 
-    this.ws = ws = new WebSocket(`ws://127.0.0.1:${port}`);
     this.ws.onmessage = async (e) => {
       const data: WsMessage = JSON.parse(await e.data.text());
       this.replaceWithOcrText(data);
