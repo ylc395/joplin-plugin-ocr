@@ -1,17 +1,27 @@
 import joplin from 'api';
+import { nextAvailable } from 'node-port-check';
+import { OPEN, WebSocketServer } from 'ws';
 import { ContentScriptType, SettingItemType, ToolbarButtonLocation, ViewHandle } from 'api/types';
 import type { ResourceType, Resource } from 'domain/model/Resource';
 import { LANGS_SETTING_KEY, MONITOR_SETTING_KEY } from 'domain/service/AppService';
-import { MARKDOWN_SCRIPT_ID, WINDOW_HEIGHT, WINDOW_WIDTH } from 'driver/constants';
+import {
+  MARKDOWN_SCRIPT_ID,
+  CODE_MIRROR_SCRIPT_ID,
+  WINDOW_HEIGHT,
+  WINDOW_WIDTH,
+} from 'driver/constants';
 import { Request, MarkdownOcrRequest } from './request';
 
 export class Joplin {
   private dialog?: ViewHandle;
+  private wsPort?: number;
   private resource?: Resource;
   private async handleRequest(request: Request) {
     switch (request.event) {
       case 'getResources':
         return this.resource;
+      case 'getWsPort':
+        return this.wsPort;
       case 'getInstallDir':
         return joplin.plugins.installationDir();
       case 'getSettingOf':
@@ -25,6 +35,22 @@ export class Joplin {
       default:
         break;
     }
+  }
+
+  async initWs() {
+    const port: number = await nextAvailable(3000);
+    this.wsPort = port;
+
+    const wss = new WebSocketServer({ port });
+    wss.on('connection', (ws) => {
+      ws.on('message', (message) => {
+        wss.clients.forEach((client) => {
+          if (client.readyState === OPEN) {
+            client.send(message);
+          }
+        });
+      });
+    });
   }
 
   private async startOcr(request?: MarkdownOcrRequest['payload']) {
@@ -104,6 +130,16 @@ export class Joplin {
       COMMAND_NAME,
       ToolbarButtonLocation.EditorToolbar,
     );
+  }
+
+  async setupCodeMirror() {
+    await joplin.contentScripts.register(
+      ContentScriptType.CodeMirrorPlugin,
+      CODE_MIRROR_SCRIPT_ID,
+      './driver/codeMirror/index.js',
+    );
+
+    await joplin.contentScripts.onMessage(CODE_MIRROR_SCRIPT_ID, this.handleRequest.bind(this));
   }
 
   private static getResource(url: string, type: ResourceType) {

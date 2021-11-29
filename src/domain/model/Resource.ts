@@ -48,3 +48,8 @@ export function secondsToFrameName(seconds: number) {
 
   return `${hour}:${minute}:${second}`;
 }
+
+export interface ResourceIdentifier {
+  resourceId: string;
+  index: number;
+}

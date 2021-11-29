@@ -5,4 +5,5 @@ export enum ViewEvents {
 
 export enum ImageEvents {
   Destroyed = 'destroyed',
+  Completed = 'completed',
 }

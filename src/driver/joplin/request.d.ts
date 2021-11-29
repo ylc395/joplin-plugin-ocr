@@ -6,6 +6,7 @@ export type Request =
   | GetResourcesRequest
   | SetSettingOfRequest
   | QueryCurrentNoteId
+  | GetWsPortRequest
   | GetSettingOfRequest;
 
 export interface MarkdownOcrRequest {
@@ -23,6 +24,10 @@ export interface GetResourcesRequest {
 
 export interface GetInstallDirRequest {
   event: 'getInstallDir';
+}
+
+export interface GetWsPortRequest {
+  event: 'getWsPort';
 }
 
 export interface GetSettingOfRequest {

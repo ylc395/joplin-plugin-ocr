@@ -213,6 +213,7 @@ const extraScriptConfig = Object.assign({}, baseConfig, webviewConfig, {
 const createArchiveConfig = {
   stats: 'errors-only',
   entry: './dist/index.js',
+  target: 'node',
   output: {
     filename: 'index.js',
     path: publishDir,

@@ -3,17 +3,23 @@ import type {
   GetInstallDirRequest,
   QueryCurrentNoteId,
   GetSettingOfRequest,
+  GetWsPortRequest,
 } from 'driver/joplin/request';
+import type { ResourceIdentifier } from 'domain/model/Resource';
 import type { RecognizorParams } from 'domain/service/RecognitionService';
 import { MONITOR_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import { OcrImage } from './Image';
 import { ViewEvents, ImageEvents } from './constants';
 
+export type WsMessage = ResourceIdentifier & {
+  text: string;
+};
+
 declare const webviewApi: {
   postMessage: <T>(
     id: string,
-    payload: GetInstallDirRequest | QueryCurrentNoteId | GetSettingOfRequest,
+    payload: GetInstallDirRequest | QueryCurrentNoteId | GetSettingOfRequest | GetWsPortRequest,
   ) => Promise<T>;
 };
 
@@ -27,11 +33,13 @@ export class Recognizor {
   private initializing?: Promise<void>;
   private masksContainerEl = document.createElement('div');
   private readonly view = new EventEmitter<ViewEvents>();
+  private ws?: WebSocket;
   constructor() {
     this.init();
   }
 
   private init() {
+    this.initWs();
     document.addEventListener(
       'joplin-noteDidUpdate',
       () => (this.initializing = this.handleNoteUpdated()),
@@ -52,6 +60,11 @@ export class Recognizor {
     );
 
     this.initializing = this.handleNoteUpdated();
+  }
+
+  private async initWs() {
+    const port = await webviewApi.postMessage<number>(MARKDOWN_SCRIPT_ID, { event: 'getWsPort' });
+    this.ws = new WebSocket(`ws://127.0.0.1:${port}`);
   }
 
   private async handleNoteUpdated() {
@@ -106,14 +119,36 @@ export class Recognizor {
     }
 
     if (!this.images[id]) {
-      this.images[id] = new OcrImage(
-        { resourceId, index: Number(index) },
-        { params, dir, masksContainer: this.masksContainerEl, view: this.view },
-      );
+      const identifier = { resourceId, index: Number(index) };
+      const ocrImage = new OcrImage(identifier, {
+        params,
+        dir,
+        masksContainer: this.masksContainerEl,
+        view: this.view,
+      });
 
-      this.images[id].on(ImageEvents.Destroyed, () => {
+      ocrImage.on(ImageEvents.Destroyed, () => {
         delete this.images[id];
       });
+
+      ocrImage.on(ImageEvents.Completed, (text: string) =>
+        this.sendRecognitionResult(identifier, text),
+      );
+
+      this.images[id] = ocrImage;
     }
+  }
+
+  private sendRecognitionResult(identifier: ResourceIdentifier, text: string) {
+    if (!this.ws) {
+      throw new Error('no ws');
+    }
+
+    const data = JSON.stringify({
+      ...identifier,
+      text,
+    } as WsMessage);
+
+    this.ws.send(data);
   }
 }

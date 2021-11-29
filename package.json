@@ -15,8 +15,10 @@
     "joplin-plugin"
   ],
   "devDependencies": {
+    "@types/codemirror": "^5.60.5",
     "@types/lodash.mapvalues": "^4.6.6",
     "@types/node": "^14.0.14",
+    "@types/ws": "^8.2.0",
     "@vue/compiler-sfc": "^3.2.20",
     "chalk": "^4.1.0",
     "copy-webpack-plugin": "^6.1.0",
@@ -48,12 +50,14 @@
     "cropperjs": "^1.5.12",
     "eventemitter3": "^4.0.7",
     "lodash.mapvalues": "^4.6.0",
+    "node-port-check": "^2.0.1",
     "pdfjs-dist": "^2.10.377",
     "radial-bar": "^0.2.2",
     "reflect-metadata": "^0.1.13",
     "tailwindcss": "^2.2.17",
     "tesseract.js": "^2.1.5",
     "tsyringe": "^4.6.0",
-    "vue": "^3.2.20"
+    "vue": "^3.2.20",
+    "ws": "^8.3.0"
   }
 }

@@ -2,10 +2,11 @@ import EventEmitter from 'eventemitter3';
 import { createPopper, Rect } from '@popperjs/core';
 import { createWorker, Worker } from 'tesseract.js';
 import CircleBar from 'radial-bar';
+import type { ResourceIdentifier } from 'domain/model/Resource';
 import type { RecognizorParams } from 'domain/service/RecognitionService';
+import { OCR_RESULT_PREFIX } from 'driver/constants';
 import { ViewEvents, ImageEvents } from './constants';
 
-const OCR_RESULT_PREFIX = 'joplin-ocr-text:';
 const MASK_CONTAINER_CLASS_NAME = 'joplin-ocr-mask-container';
 const MASK_CONTAINER_HIDDEN_CLASS_NAME = 'joplin-ocr-mask-container-hidden';
 
@@ -34,8 +35,9 @@ export class OcrImage extends EventEmitter<ImageEvents> {
   private readonly dir: string;
   private readonly view: EventEmitter<ViewEvents>;
   private readonly masksContainer: HTMLDivElement;
+  result?: string;
   constructor(
-    private readonly id: { resourceId: string; index: number },
+    private readonly id: ResourceIdentifier,
     {
       view,
       params,
@@ -63,11 +65,11 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       throw new Error('no el for image');
     }
 
-    this.result = el.alt.startsWith(OCR_RESULT_PREFIX)
-      ? el.alt.replace(new RegExp(`^${OCR_RESULT_PREFIX}`), '')
-      : undefined;
+    const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
 
-    this.createMask(el);
+    if (typeof encodedText === 'string') {
+      this.result = decodeURIComponent(encodedText);
+    }
 
     if (!this.result) {
       this.recognize();
@@ -84,9 +86,14 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     return el;
   }
 
-  private result?: string;
-
   private async recognize() {
+    const { el } = this;
+
+    if (!el) {
+      throw new Error('no el when recognizing');
+    }
+
+    this.createMask(el);
     const { langs, wordSpacePreserved, whitelist } = this.params;
     const worker = createWorker({
       workerBlobURL: false,
@@ -112,12 +119,6 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       tessedit_char_whitelist: whitelist,
     });
 
-    const { el } = this;
-
-    if (!el) {
-      throw new Error('no el when recognizing');
-    }
-
     const {
       data: { text },
     } = await this.worker.recognize(el, {
@@ -125,20 +126,22 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     });
 
     this.result = text;
+    this.emit(ImageEvents.Completed, text);
   }
 
   private destroy = () => {
-    if (!this.mask) {
-      throw new Error('no mask when destroy');
+    this.worker?.terminate();
+
+    if (this.mask) {
+      this.mask.destroy();
+      this.mask.state.elements.popper.remove();
+      this.mask = undefined;
     }
 
-    this.worker?.terminate();
-    this.mask.destroy();
-    this.mask.state.elements.popper.remove();
-    this.mask = undefined;
     this.view.off(ViewEvents.NoteUpdated, this.handleNoteUpdated);
     this.view.off(ViewEvents.NoteChanged, this.destroy);
     this.emit(ImageEvents.Destroyed);
+    this.removeAllListeners();
   };
 
   private handleNoteUpdated = () => {
