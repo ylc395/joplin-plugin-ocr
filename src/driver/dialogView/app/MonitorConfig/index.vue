@@ -36,7 +36,7 @@ export default defineComponent({
       await _setConfig();
 
       if (config.value.isMonitoring) {
-        message.success('Images will be auto-recognized');
+        message.success('New setting will be applied since next recognition');
       } else {
         message.info('Images will not be auto-recognized');
       }
@@ -68,7 +68,14 @@ export default defineComponent({
           <FormItem
             class="mb-4"
             label="How to display result"
-            help="Attention: All will modify your note content."
+            :validateStatus="
+              config.textInsertionType === TextInsertionType.RealReplace ? 'warning' : 'success'
+            "
+            :help="
+              config.textInsertionType === TextInsertionType.RealReplace
+                ? 'Attention: Existing images will be all removed, replaced with text.'
+                : 'This will modify your note content to store recognition text'
+            "
           >
             <RadioGroup v-model:value="config.textInsertionType">
               <!-- <Radio :value="TextInsertionType.Append">Insert After the image</Radio> -->
