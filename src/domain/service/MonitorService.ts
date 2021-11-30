@@ -17,6 +17,7 @@ export class MonitorService {
     whitelist: '',
     wordSpacePreserved: '0',
     textInsertionType: TextInsertionType.Replace,
+    newlineIgnored: false,
   } as MonitorConfig);
   readonly isConfigValid = computed(() => {
     return Boolean(!this.config.value?.isMonitoring || this.config.value?.langs.length);

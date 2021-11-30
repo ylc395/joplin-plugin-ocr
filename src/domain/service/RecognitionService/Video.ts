@@ -45,7 +45,7 @@ export class VideoRecognitionService extends RecognitionService {
 
     try {
       this.result.value = (await Promise.all(results)).map((result, i) => ({
-        result,
+        result: this.postProcess(result),
         name: secondsToFrameName(frames[i]),
       }));
     } catch (error) {

@@ -16,11 +16,13 @@ export class ImageRecognitionService extends RecognitionService {
   async recognize() {
     this.isRecognizing.value = true;
     try {
-      this.result.value = await this.recognizor.recognize(this.image, {
-        ...this.params,
-        rect: toRaw(this.rect.value),
-        jobCount: 1,
-      });
+      this.result.value = this.postProcess(
+        await this.recognizor.recognize(this.image, {
+          ...this.params,
+          rect: toRaw(this.rect.value),
+          jobCount: 1,
+        }),
+      );
     } catch (error) {
       this.errorMessage.value = String(error);
     }

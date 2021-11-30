@@ -40,12 +40,10 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     private readonly id: ResourceIdentifier,
     {
       view,
-      params,
       dir,
       masksContainer,
     }: {
       view: EventEmitter<ViewEvents>;
-      params: MonitorConfig;
       dir: string;
       masksContainer: HTMLDivElement;
     },
@@ -118,11 +116,15 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       tessedit_char_whitelist: whitelist,
     });
 
-    const {
+    let {
       data: { text },
     } = await this.worker.recognize(el, {
       rectangle: params.rect,
     });
+
+    if (params.newlineIgnored) {
+      text = text.replaceAll('\n', '');
+    }
 
     this.emit(ImageEvents.Completed, text);
     this.isRecognizing = false;

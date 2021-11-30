@@ -46,7 +46,7 @@ export class PdfRecognitionService extends RecognitionService {
 
     try {
       this.result.value = (await Promise.all(results)).map((result, i) => ({
-        result,
+        result: this.postProcess(result),
         name: `Page ${pageNumbers[i]}`,
       }));
     } catch (error) {

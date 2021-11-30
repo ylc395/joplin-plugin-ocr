@@ -26,6 +26,9 @@ export default defineComponent({
   <FormItem label="Keeps the space between words">
     <Switch v-model:checked="wordSpacePreserved" checkedValue="0" unCheckedValue="1" />
   </FormItem>
+  <FormItem label="Ignore newline">
+    <Switch v-model:checked="newlineIgnored" />
+  </FormItem>
   <FormItem label="Result only contains these characters" help="For example: 0123456789">
     <Input v-model:value="whitelist" />
   </FormItem>

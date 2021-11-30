@@ -110,6 +110,7 @@ export class PdfRange {
 export interface RecognizorParams {
   langs: string[];
   wordSpacePreserved: '0' | '1';
+  newlineIgnored: boolean;
   whitelist: string;
   rect?: Rect;
   jobCount?: number;

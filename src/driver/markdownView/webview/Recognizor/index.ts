@@ -127,7 +127,6 @@ export class Recognizor {
     if (!this.images[id]) {
       const identifier = { resourceId, index: Number(index) };
       const ocrImage = new OcrImage(identifier, {
-        params,
         dir,
         masksContainer: this.masksContainerEl,
         view: this.view,

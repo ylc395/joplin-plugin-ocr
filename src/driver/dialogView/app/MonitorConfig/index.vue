@@ -68,7 +68,7 @@ export default defineComponent({
           <FormItem
             class="mb-4"
             label="How to display result"
-            help="All will modify your note by inserting text as image's title"
+            help="Attention: All will modify your note content."
           >
             <RadioGroup v-model:value="config.textInsertionType">
               <!-- <Radio :value="TextInsertionType.Append">Insert After the image</Radio> -->
@@ -89,6 +89,9 @@ export default defineComponent({
               checkedValue="0"
               unCheckedValue="1"
             />
+          </FormItem>
+          <FormItem label="Ignore newline">
+            <Switch v-model:checked="config.newlineIgnored" />
           </FormItem>
           <FormItem label="Result only contains these characters" help="For example: 0123456789">
             <Input v-model:value="config.whitelist" />

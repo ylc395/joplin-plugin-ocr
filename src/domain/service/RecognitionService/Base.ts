@@ -21,6 +21,14 @@ export abstract class RecognitionService {
   constructor() {
     this.init();
   }
+  protected postProcess(result: string) {
+    if (this.params.newlineIgnored) {
+      return result.replaceAll('\n', '');
+    }
+
+    return result;
+  }
+
   abstract readonly isParamsValid: Ref<boolean>;
   abstract readonly result: Ref<unknown | null>;
   abstract recognize(): Promise<void>;
@@ -33,6 +41,7 @@ export abstract class RecognitionService {
     langs: [],
     wordSpacePreserved: '0',
     whitelist: '',
+    newlineIgnored: false,
   });
 
   private async init() {
