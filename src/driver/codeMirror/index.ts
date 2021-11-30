@@ -33,7 +33,7 @@ class TextInserter {
     if (!this.ws) {
       const port = await this.context.postMessage<number>({ event: 'getWsPort' });
 
-      if (!port && process.env.NODE_ENV === 'development') {
+      if (!port) {
         setTimeout(this.init.bind(this), 500);
         return;
       }
