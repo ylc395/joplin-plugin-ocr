@@ -1,6 +1,6 @@
 import { container } from 'tsyringe';
 import { Ref, ref, computed } from 'vue';
-import { MonitorConfig } from '../model/Recognition';
+import { MonitorConfig, TextInsertionType } from '../model/Recognition';
 import { appToken, MONITOR_SETTING_KEY, LANGS_SETTING_KEY, langsStrToArray } from './AppService';
 
 export class MonitorService {
@@ -16,7 +16,7 @@ export class MonitorService {
     langs: [],
     whitelist: '',
     wordSpacePreserved: '0',
-    textInsertionType: 'replace',
+    textInsertionType: TextInsertionType.Replace,
   } as MonitorConfig);
   readonly isConfigValid = computed(() => {
     return Boolean(!this.config.value?.isMonitoring || this.config.value?.langs.length);

@@ -3,7 +3,7 @@ import { createPopper, Rect } from '@popperjs/core';
 import { createWorker, Worker } from 'tesseract.js';
 import CircleBar from 'radial-bar';
 import type { ResourceIdentifier } from 'domain/model/Resource';
-import { MonitorConfig } from 'domain/model/Recognition';
+import { MonitorConfig, TextInsertionType } from 'domain/model/Recognition';
 import { OCR_RESULT_PREFIX } from 'driver/constants';
 import { ViewEvents, ImageEvents } from './constants';
 
@@ -31,7 +31,6 @@ export class OcrImage extends EventEmitter<ImageEvents> {
   private mask?: ReturnType<typeof createPopper>;
   private worker?: Worker;
   private circleBar?: any;
-  private readonly params: MonitorConfig;
   private readonly dir: string;
   private readonly view: EventEmitter<ViewEvents>;
   private readonly masksContainer: HTMLDivElement;
@@ -51,15 +50,12 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     },
   ) {
     super();
-    this.params = params;
     this.dir = dir;
     this.masksContainer = masksContainer;
     this.view = view;
 
     view.on(ViewEvents.NoteUpdated, this.handleNoteUpdated);
     view.on(ViewEvents.NoteChanged, this.destroy);
-
-    this.recognize();
   }
 
   private get el(): HTMLImageElement | undefined {
@@ -72,7 +68,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     return el;
   }
 
-  async recognize() {
+  async recognize(params: MonitorConfig) {
     if (this.isRecognizing) {
       return;
     }
@@ -88,13 +84,15 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
 
     if (typeof encodedText === 'string') {
-      this.setResult(decodeURIComponent(encodedText));
+      const text = decodeURIComponent(encodedText);
+      await Promise.resolve(); // keep Completed event async
+      this.setResult(text, params);
       this.isRecognizing = false;
       return;
     }
 
     this.createMask(el);
-    const { langs, wordSpacePreserved, whitelist } = this.params;
+    const { langs, wordSpacePreserved, whitelist } = params;
     const worker = createWorker({
       workerBlobURL: false,
       logger: (log) => {
@@ -122,7 +120,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     const {
       data: { text },
     } = await this.worker.recognize(el, {
-      rectangle: this.params.rect,
+      rectangle: params.rect,
     });
 
     this.emit(ImageEvents.Completed, text);
@@ -130,7 +128,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     this.worker.terminate();
   }
 
-  private setResult(text: string) {
+  private setResult(text: string, params: MonitorConfig) {
     const { el } = this;
 
     if (!el) {
@@ -138,6 +136,17 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     }
 
     el.title = el.title.replace(new RegExp(` ?${OCR_RESULT_PREFIX}(.+)$`), '');
+
+    if (params.textInsertionType === TextInsertionType.Replace) {
+      const textEl = document.createElement('span');
+      textEl.innerText = text;
+
+      el.replaceWith(textEl);
+    }
+
+    if (params.textInsertionType === TextInsertionType.RealReplace) {
+      this.emit(ImageEvents.Completed, text);
+    }
   }
 
   private destroy = () => {

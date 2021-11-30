@@ -71,7 +71,7 @@ export default defineComponent({
             help="All will modify your note by inserting text as image's title"
           >
             <RadioGroup v-model:value="config.textInsertionType">
-              <Radio :value="TextInsertionType.Append">Insert After the image</Radio>
+              <!-- <Radio :value="TextInsertionType.Append">Insert After the image</Radio> -->
               <Radio :value="TextInsertionType.RealReplace"
                 >Replace the image(remove image on origin note)</Radio
               >

@@ -79,14 +79,6 @@ export class Recognizor {
       event: 'queryCurrentNoteId',
     });
 
-    if (noteId === this.currentNoteId) {
-      this.view.emit(ViewEvents.NoteUpdated);
-      return;
-    }
-
-    this.currentNoteId = noteId;
-    this.view.emit(ViewEvents.NoteChanged);
-
     const monitorConfig = JSON.parse(
       (await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
         event: 'getSettingOf',
@@ -95,6 +87,13 @@ export class Recognizor {
     );
 
     this.params = await monitorConfig[noteId];
+
+    if (noteId === this.currentNoteId) {
+      this.view.emit(ViewEvents.NoteUpdated, this.params);
+    } else {
+      this.currentNoteId = noteId;
+      this.view.emit(ViewEvents.NoteChanged);
+    }
   }
 
   private getImageId(el: HTMLImageElement) {
@@ -143,9 +142,9 @@ export class Recognizor {
       );
 
       this.images[id] = ocrImage;
-    } else {
-      this.images[id].recognize();
     }
+
+    this.images[id].recognize(params);
   }
 
   private sendRecognitionResult(identifier: ResourceIdentifier, text: string) {
