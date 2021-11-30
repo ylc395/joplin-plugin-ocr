@@ -53,7 +53,7 @@ export default defineComponent({
       <p class="my-0">Auto Image Recognition</p>
       <p class="my-0">For Current Note</p>
     </div>
-    <div class="flex-1 flex flex-col justify-between min-h-screen">
+    <div v-if="allLangs.length > 0" class="flex-1 flex flex-col justify-between min-h-screen">
       <Form layout="vertical">
         <FormItem
           class="mb-4"
@@ -111,5 +111,9 @@ export default defineComponent({
         >
       </div>
     </div>
+    <p v-else class="mb-4 flex items-center">
+      This plugin is not enabled now. Please set available language codes for this plugin in Joplin
+      Setting Panel to enable this plugin.
+    </p>
   </div>
 </template>
