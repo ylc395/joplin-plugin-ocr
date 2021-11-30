@@ -14,6 +14,10 @@ All of them work offline, except for downloading language package(s) on first ti
 
 ![](./doc/ocr.gif)
 
+Auto Recognition(images only) is available:
+
+![](./doc/auto-orc.gif)
+
 ## User Guide
 
 Before starting using this plugin, please set the **Language codes**:
