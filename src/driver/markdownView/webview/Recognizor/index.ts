@@ -9,7 +9,7 @@ import type { ResourceIdentifier } from 'domain/model/Resource';
 import { TextInsertionType, MonitorConfig } from 'domain/model/Recognition';
 import { MONITOR_SETTING_KEY } from 'domain/service/AppService';
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
-import { OcrImage } from './Image';
+import { OcrImage, RecognitionMethods, RecognitionResult } from './Image';
 import { ViewEvents, ImageEvents } from './constants';
 
 export type WsMessage = ResourceIdentifier & {
@@ -136,8 +136,8 @@ export class Recognizor {
         delete this.images[id];
       });
 
-      ocrImage.on(ImageEvents.Completed, (text: string) =>
-        this.sendRecognitionResult(identifier, text),
+      ocrImage.on(ImageEvents.Completed, (result: RecognitionResult) =>
+        this.sendRecognitionResult(identifier, result),
       );
 
       this.images[id] = ocrImage;
@@ -146,9 +146,19 @@ export class Recognizor {
     this.images[id].recognize(params);
   }
 
-  private sendRecognitionResult(identifier: ResourceIdentifier, text: string) {
+  private sendRecognitionResult(
+    identifier: ResourceIdentifier,
+    { text, method }: RecognitionResult,
+  ) {
     if (!this.ws || !this.params) {
       throw new Error('no ws/params');
+    }
+
+    if (
+      this.params.textInsertionType === TextInsertionType.Replace &&
+      method === RecognitionMethods.FromEl
+    ) {
+      return;
     }
 
     const message: WsMessage = {

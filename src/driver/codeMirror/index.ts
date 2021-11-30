@@ -72,7 +72,7 @@ class TextInserter {
       throw new Error('search error');
     }
 
-    if (removeNeeded) {
+    if (removeNeeded && text) {
       this.doc.replaceRange(text, from, to);
       return;
     }

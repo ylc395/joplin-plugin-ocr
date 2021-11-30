@@ -28,6 +28,16 @@ const getRound = (imgEl: HTMLImageElement) => ({
   y: imgEl.height / 2,
 });
 
+export enum RecognitionMethods {
+  FromEl,
+  FromTesseract,
+}
+
+export interface RecognitionResult {
+  text: string;
+  method: RecognitionMethods;
+}
+
 export class OcrImage extends EventEmitter<ImageEvents> {
   private mask?: ReturnType<typeof createPopper>;
   private worker?: Worker;
@@ -80,12 +90,14 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       throw new Error('no el for image');
     }
 
-    const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
+    const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.*)$`))?.[1];
 
     if (typeof encodedText === 'string') {
-      const text = unescape(encodedText);
-      await Promise.resolve(); // keep Completed event async
+      const text = unescape(encodedText).trim();
       this.setResult(text, params);
+
+      await Promise.resolve(); // keep Completed event async
+      this.emit(ImageEvents.Completed, { text, method: RecognitionMethods.FromEl });
       this.isRecognizing = false;
       return;
     }
@@ -126,7 +138,10 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       text = text.replaceAll('\n', '');
     }
 
-    this.emit(ImageEvents.Completed, text);
+    this.emit(ImageEvents.Completed, {
+      text: text.trim(),
+      method: RecognitionMethods.FromTesseract,
+    });
     this.isRecognizing = false;
     this.worker.terminate();
   }
@@ -138,17 +153,13 @@ export class OcrImage extends EventEmitter<ImageEvents> {
       throw new Error('no el');
     }
 
-    el.title = el.title.replace(new RegExp(` ?${OCR_RESULT_PREFIX}(.+)$`), '');
+    el.title = el.title.replace(new RegExp(` ?${OCR_RESULT_PREFIX}(.*)$`), '');
 
     if (params.textInsertionType === TextInsertionType.Replace) {
       const textEl = document.createElement('span');
       textEl.innerText = text;
 
       el.replaceWith(textEl);
-    }
-
-    if (params.textInsertionType === TextInsertionType.RealReplace) {
-      this.emit(ImageEvents.Completed, text);
     }
   }
 
