@@ -1,6 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import { createPopper, Rect } from '@popperjs/core';
 import { createWorker, Worker } from 'tesseract.js';
+import { unescape } from 'safe-string-literal';
 import CircleBar from 'radial-bar';
 import type { ResourceIdentifier } from 'domain/model/Resource';
 import { MonitorConfig, TextInsertionType } from 'domain/model/Recognition';
@@ -84,7 +85,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     const encodedText = el.title.match(new RegExp(`${OCR_RESULT_PREFIX}(.+)$`))?.[1];
 
     if (typeof encodedText === 'string') {
-      const text = decodeURIComponent(encodedText);
+      const text = unescape(encodedText);
       await Promise.resolve(); // keep Completed event async
       this.setResult(text, params);
       this.isRecognizing = false;

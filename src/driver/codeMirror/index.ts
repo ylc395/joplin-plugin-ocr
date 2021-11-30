@@ -1,5 +1,6 @@
 import type CodeMirror from 'codemirror';
 import type { Editor, Position } from 'codemirror';
+import { escape } from 'safe-string-literal';
 import type { GetWsPortRequest } from 'driver/joplin/request';
 import type { WsMessage } from 'driver/markdownView/webview/Recognizor';
 import { OCR_RESULT_PREFIX } from 'driver/constants';
@@ -87,7 +88,7 @@ class TextInserter {
     const titleMatch = srcText.match(/ "(.*)"$/);
     const titleText = titleMatch?.[1];
     const titleIndex = titleMatch?.index;
-    const ocrResult = `${OCR_RESULT_PREFIX}${encodeURIComponent(text)}`;
+    const ocrResult = `${OCR_RESULT_PREFIX}${escape(text)}`;
 
     if (!titleMatch) {
       const titleTextPos: Position = {

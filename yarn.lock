@@ -3520,6 +3520,11 @@ safe-regex@^1.1.0:
   dependencies:
     ret "~0.1.10"
 
+safe-string-literal@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/safe-string-literal/-/safe-string-literal-1.0.4.tgz#82b208410d33b01e77173071309d1f459233001e"
+  integrity sha512-t3AEgYa5CJhbMVgjypp74stVKny8Wrj5f2855lZZ0QCLTLoIGpshqIKbtQ9deuwuMCEh0HKoxS6nkuARtvLrAA==
+
 safer-buffer@^2.1.0:
   version "2.1.2"
   resolved "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
