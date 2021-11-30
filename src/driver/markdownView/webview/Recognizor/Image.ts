@@ -144,6 +144,7 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     });
     this.isRecognizing = false;
     this.worker.terminate();
+    this.destroyMask();
   }
 
   private setResult(text: string, params: MonitorConfig) {
@@ -155,6 +156,10 @@ export class OcrImage extends EventEmitter<ImageEvents> {
 
     el.title = el.title.replace(new RegExp(` ?${OCR_RESULT_PREFIX}(.*)$`), '');
 
+    if (!text) {
+      return;
+    }
+
     if (params.textInsertionType === TextInsertionType.Replace) {
       const textEl = document.createElement('span');
       textEl.innerText = text;
@@ -163,15 +168,18 @@ export class OcrImage extends EventEmitter<ImageEvents> {
     }
   }
 
-  private destroy = () => {
-    this.worker?.terminate();
-
+  private destroyMask() {
     if (this.mask) {
       this.mask.destroy();
       this.mask.state.elements.popper.remove();
       this.mask = undefined;
     }
+  }
 
+  private destroy = () => {
+    this.worker?.terminate();
+
+    this.destroyMask();
     this.view.off(ViewEvents.NoteUpdated, this.handleNoteUpdated);
     this.view.off(ViewEvents.NoteChanged, this.destroy);
     this.emit(ImageEvents.Destroyed);

@@ -155,8 +155,8 @@ export class Recognizor {
     }
 
     if (
-      this.params.textInsertionType === TextInsertionType.Replace &&
-      method === RecognitionMethods.FromEl
+      method === RecognitionMethods.FromEl &&
+      (this.params.textInsertionType === TextInsertionType.Replace || !text)
     ) {
       return;
     }
