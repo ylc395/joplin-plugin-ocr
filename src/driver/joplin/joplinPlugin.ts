@@ -1,6 +1,6 @@
 import joplin from 'api';
 import { nextAvailable } from 'node-port-check';
-import { OPEN, WebSocketServer } from 'ws';
+import { OPEN, WebSocket, WebSocketServer } from 'ws';
 import { ContentScriptType, SettingItemType, ToolbarButtonLocation, ViewHandle } from 'api/types';
 import type { ResourceType, Resource } from 'domain/model/Resource';
 import { LANGS_SETTING_KEY, MONITOR_SETTING_KEY } from 'domain/service/AppService';
@@ -38,11 +38,14 @@ export class Joplin {
   }
 
   async initWs() {
+    type ExtendedWs = WebSocket & { isAlive: boolean };
     const port: number = await nextAvailable(3000);
     this.wsPort = port;
 
     const wss = new WebSocketServer({ port });
-    wss.on('connection', (ws) => {
+    wss.on('connection', (ws: ExtendedWs) => {
+      ws.isAlive = true;
+      ws.on('pong', () => (ws.isAlive = true));
       ws.on('message', (message) => {
         wss.clients.forEach((client) => {
           if (client.readyState === OPEN) {
@@ -51,6 +54,17 @@ export class Joplin {
         });
       });
     });
+
+    setInterval(() => {
+      wss.clients.forEach((ws) => {
+        if (!(ws as ExtendedWs).isAlive) {
+          ws.terminate();
+        } else {
+          (ws as ExtendedWs).isAlive = false;
+          ws.ping();
+        }
+      });
+    }, 30000);
   }
 
   private async startOcr(request?: MarkdownOcrRequest['payload']) {
