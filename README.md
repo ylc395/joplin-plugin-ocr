@@ -16,7 +16,7 @@ All of them work offline, except for downloading language package(s) on first ti
 
 Auto Recognition(images only) is available:
 
-![](./doc/auto-orc.gif)
+![](./doc/auto-ocr.gif)
 
 ## User Guide
 
